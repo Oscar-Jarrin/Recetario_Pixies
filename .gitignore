@@ -1,0 +1,22 @@
+# IntelliJ IDEA specific
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Build directories (Gradle)
+.gradle/
+build/
+bin/
+
+# Build directories (Maven - if applicable)
+target/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Local environment/IDE overrides
+.env
+*.local
