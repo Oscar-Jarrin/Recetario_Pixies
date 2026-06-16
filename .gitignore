@@ -1,22 +1,22 @@
-# IntelliJ IDEA specific
-.idea/
-*.iws
 *.iml
-*.ipr
-out/
-
-# Build directories (Gradle)
-.gradle/
-build/
-bin/
-
-# Build directories (Maven - if applicable)
-target/
-
-# OS specific files
+.kotlin
+.gradle
+**/build/
+xcuserdata
+!src/**/build/
+local.properties
+.idea
 .DS_Store
+captures
+.externalNativeBuild
+.cxx
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+node_modules/
 Thumbs.db
-
-# Local environment/IDE overrides
-.env
-*.local
+desktop.ini
+reference-project/
