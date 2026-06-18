@@ -1,5 +1,6 @@
 package com.pixies.recetario.data.remote
 
+import com.pixies.recetario.data.remote.dto.IngredientSearchResponseDto
 import com.pixies.recetario.data.remote.dto.RandomRecipesResponseDto
 import com.pixies.recetario.data.remote.dto.RecipeOverviewDto
 import io.ktor.client.HttpClient
@@ -13,4 +14,14 @@ class KtorSpoonacularApiService(private val client: HttpClient) : SpoonacularApi
         client.get("$BASE_URL/recipes/random") {
             parameter("number", count)
         }.body<RandomRecipesResponseDto>().recipes
+
+    override suspend fun findByIngredients(
+        ingredients: String,
+        count: Int
+    ): List<IngredientSearchResponseDto> =
+        client.get("$BASE_URL/recipes/findByIngredients") {
+            parameter("ingredients", ingredients)
+            parameter("number", count)
+            parameter("ranking", 1)
+        }.body()
 }

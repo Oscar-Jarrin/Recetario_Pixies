@@ -10,7 +10,7 @@
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Navigation | `compose-navigation` library, `NavHost` in `App.kt`, typed routes in `commonMain` | Idiomatic KMP, keeps routing in shared code |
-| `IngredientSearchResult` enrichment | JOIN with `RecipeOverviewEntity` by id; default `0` / `""` if recipe was never cached | `/findByIngredients` returns no `readyInMinutes` or `dishType` |
+| `IngredientSearchResult` fields | `readyInMinutes` and `dishType` are NOT included — `/findByIngredients` does not return them and enrichment creates inconsistent results across cached/uncached recipes | uniform model for all results |
 | `RecipeInstructions.instructions` | `Map<String, List<String>>` â€” key = group name (`""` for ungrouped steps) | API returns multiple named groups; UI renders group headers |
 | Weekly plans | Unlimited user-named plans; `WeeklyPlanEntity` + `WeeklyPlanSlotEntity` (7 slots per plan) | "planType" â†’ user-defined plan name string |
 | Offline ingredient search | `RecipeIngredientEntity` join table populated at cache time; SQL categorisation in DAO | Scalable, testable, avoids in-memory set ops on large caches |
@@ -37,8 +37,6 @@
 | `id` | `id: Int` | direct |
 | `title` | `title: String` | direct |
 | `image` | `imageUrl: String` | rename |
-| *(not in response)* | `readyInMinutes: Int` | JOIN with `RecipeOverviewEntity.readyInMinutes` by id |
-| *(not in response)* | `dishType: String` | JOIN with `RecipeOverviewEntity.dishType` by id |
 | `missedIngredients[i].name` | `missingIngredients: List<String>` | extract names |
 | `usedIngredients[i].name` | `usedIngredients: List<String>` | extract names |
 | `unusedIngredients[i].name` | `unusedIngredients: List<String>` | extract names |
@@ -650,8 +648,6 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
       val id: Int,
       val title: String,
       val imageUrl: String,
-      val readyInMinutes: Int,
-      val dishType: String,
       val missingIngredients: List<String>,
       val usedIngredients: List<String>,
       val unusedIngredients: List<String>
@@ -682,9 +678,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 **File edited:**
 `shared/src/commonTest/kotlin/com/pixies/recetario/data/RecipeRepositoryImplTest.kt` (add new test class or nested class)
 
-- [ ] **Happy path**: API returns `IngredientSearchResponseDto` list â†’ for each result, enrich from `overviewDao.getRecipeById(id)` â†’ returns assembled `IngredientSearchResult` list.
-
-- [ ] **Enrichment fallback**: `overviewDao.getRecipeById(id)` returns null (recipe not cached) â†’ `readyInMinutes = 0`, `dishType = ""`.
+- [ ] **Happy path**: API returns `IngredientSearchResponseDto` list â†’ mapped directly to `IngredientSearchResult` list. No `overviewDao` call in online path; verify `coVerify(exactly = 0) { overviewDao.getRecipeById(any()) }`.
 
 - [ ] **Network failure path**: `api.findByIngredients(â€¦)` throws â†’ `ingredientDao.getOfflineSearchResults(inputs)` called â†’ returns locally assembled list.
 
@@ -735,7 +729,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   ```
 
 - [ ] Create `IngredientSearchMapper.kt` â€” pure functions:
-  - `IngredientSearchResponseDto.toDomain(overview: RecipeOverviewEntity?): IngredientSearchResult`
+  - `IngredientSearchResponseDto.toDomain(): IngredientSearchResult` (no `overview` param; maps `id`, `title`, `image`, and the three ingredient lists)
   - `categoriseOffline(recipeId: Int, cachedIngredients: List<String>, userIngredients: List<String>): Triple<List<String>, List<String>, List<String>>`
     (returns `used, missing, unused`)
 
@@ -746,10 +740,8 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
           .getOrElse { offlineIngredientSearch(ingredients) }
 
   private suspend fun fetchIngredientResults(ingredients: List<String>): List<IngredientSearchResult> {
-      val dtos = api.findByIngredients(ingredients.joinToString(","), RANDOM_RECIPES_COUNT)
-      return dtos.map { dto ->
-          dto.toDomain(overviewDao.getRecipeById(dto.id))
-      }
+      val dtos = api.findByIngredients(ingredients.joinToString(“,”), RANDOM_RECIPES_COUNT)
+      return dtos.map { it.toDomain() }
   }
 
   private suspend fun offlineIngredientSearch(ingredients: List<String>): List<IngredientSearchResult> {

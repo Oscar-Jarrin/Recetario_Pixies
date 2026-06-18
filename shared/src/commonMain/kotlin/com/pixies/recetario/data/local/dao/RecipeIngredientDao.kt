@@ -14,4 +14,10 @@ interface RecipeIngredientDao {
 
     @Query("SELECT * FROM recipe_ingredients WHERE recipeId = :recipeId")
     suspend fun getIngredientsForRecipe(recipeId: Int): List<RecipeIngredientEntity>
+
+    @Query("SELECT * FROM recipe_ingredients WHERE recipeId IN (:ids)")
+    suspend fun getIngredientsForRecipes(ids: List<Int>): List<RecipeIngredientEntity>
+
+    @Query("SELECT DISTINCT recipeId FROM recipe_ingredients WHERE ingredientName IN (:names)")
+    suspend fun getRecipeIdsMatchingIngredients(names: List<String>): List<Int>
 }

@@ -3,6 +3,7 @@ package com.pixies.recetario.presentation.home
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,10 +15,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -33,17 +38,50 @@ private const val IMAGE_HEIGHT_DP = 200
 private const val RETRY_LABEL = "Retry"
 private const val TITLE_MAX_LINES = 2
 private const val MINUTES_SUFFIX = " min"
+private const val SEARCH_H_PADDING_DP = 16
+private const val SEARCH_V_PADDING_DP = 8
+private const val SEARCH_SPACING_DP = 8
+private const val SEARCH_PLACEHOLDER = "e.g. flour, sugar, egg"
+private const val SEARCH_LABEL = "Search"
 
 @Composable
-fun HomeView(viewModel: HomeViewModel, onRecipeClick: (Int) -> Unit) {
+fun HomeView(viewModel: HomeViewModel, onRecipeClick: (Int) -> Unit, onSearchClick: (String) -> Unit) {
     val state by viewModel.state.collectAsState()
-    when (val s = state) {
-        HomeState.Loading -> LoadingContent()
-        is HomeState.Success -> RecipeGrid(s.recipes, onRecipeClick)
-        is HomeState.Error -> ErrorContent(
-            message = s.exception.message ?: "Unknown error",
-            onRetry = viewModel::retry
+    Column(modifier = Modifier.fillMaxSize()) {
+        InlineSearchBar(onSearch = onSearchClick)
+        Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
+            when (val s = state) {
+                HomeState.Loading -> LoadingContent()
+                is HomeState.Success -> RecipeGrid(s.recipes, onRecipeClick)
+                is HomeState.Error -> ErrorContent(
+                    message = s.exception.message ?: "Unknown error",
+                    onRetry = viewModel::retry
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun InlineSearchBar(onSearch: (String) -> Unit) {
+    var query by remember { mutableStateOf("") }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SEARCH_H_PADDING_DP.dp, vertical = SEARCH_V_PADDING_DP.dp),
+        horizontalArrangement = Arrangement.spacedBy(SEARCH_SPACING_DP.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text(SEARCH_PLACEHOLDER) },
+            modifier = Modifier.weight(1f),
+            singleLine = true
         )
+        Button(
+            onClick = { if (query.isNotBlank()) onSearch(query) },
+        ) { Text(SEARCH_LABEL) }
     }
 }
 

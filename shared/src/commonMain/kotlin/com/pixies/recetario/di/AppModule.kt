@@ -7,6 +7,7 @@ import com.pixies.recetario.data.remote.buildSpoonacularClient
 import com.pixies.recetario.data.remote.httpEngine
 import com.pixies.recetario.domain.repository.RecipeRepository
 import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
+import com.pixies.recetario.domain.usecase.SearchRecipesByIngredientsUseCase
 import io.ktor.client.HttpClient
 
 class AppModule(val apiKey: String, val context: Any? = null) {
@@ -24,4 +25,5 @@ class AppModule(val apiKey: String, val context: Any? = null) {
     )
 
     val getRandomRecipesUseCase = GetRandomRecipesUseCase(recipeRepository)
+    val searchRecipesByIngredientsUseCase = SearchRecipesByIngredientsUseCase(recipeRepository)
 }
