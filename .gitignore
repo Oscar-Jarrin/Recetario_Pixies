@@ -20,3 +20,12 @@ node_modules/
 Thumbs.db
 desktop.ini
 reference-project/
+
+# SQLite runtime databases (Room / Desktop app)
+*.db
+*.db-shm
+*.db-wal
+*.db.lck
+
+# Claude Code local settings (personal permissions, machine-specific)
+.claude/settings.local.json

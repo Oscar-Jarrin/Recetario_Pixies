@@ -1,145 +1,114 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+**RecetarioPixies**: Kotlin Multiplatform (KMP) recipe app targeting Android & Desktop. Clean MVVM architecture, TDD-first development, Desktop-priority multiplatform strategy.
 
-## Project Overview
+## Architecture: Clean MVVM
 
-**RecetarioPixies** is a Kotlin Multiplatform Project (KMP) targeting Android and Desktop (JVM) using Compose Multiplatform for UI. The app is a recipe browsing application with an architecture that follows Clean Architecture principles (domain, data, and presentation layers).
+**Layer Structure** (see diagram.png):
+- **Presentation**: View (Compose UI) → ViewModel (state management, Kotlin pure)
+- **Domain**: UseCase (business logic), Repository interface (abstraction)
+- **Data**: RepositoryImpl, Room (local persistence), Ktor HTTP client (Spoonacular API)
 
-## Project Structure
+**Offline-First Cache Strategy** (mandatory):
+- Repository fetches from remote source first, caches result to Room on success
+- On network failure or no connectivity, Repository falls back to Room cached data
+- All data flows: Remote → Room → ViewModel → UI (never skip Room)
+- Stale data is acceptable when offline
+- Network errors must be surfaced to ViewModel for proper UI state handling
 
-```
-RecetarioPixies/
-├── shared/               # Kotlin Multiplatform shared library (compiled for all targets)
-│   └── src/
-│       ├── commonMain/   # Code shared across all platforms
-│       ├── androidMain/  # Android-specific code
-│       ├── jvmMain/      # Desktop (JVM)-specific code
-│       ├── commonTest/   # Shared tests
-│       ├── androidHostTest/ # Android-specific tests
-│       └── jvmTest/      # Desktop-specific tests
-├── androidApp/           # Android application module
-├── desktopApp/           # Desktop Compose application
-└── gradle/               # Gradle wrapper and configuration
-```
+**Constraints**:
+- All code in `shared/src/commonMain/` unless platform-specific bindings are unavoidable (then `androidMain/` or `jvmMain/`)
+- Use `expect/actual` for platform abstractions
+- No service locators; pure Kotlin DI at app entry points
+- One UseCase per business operation (no god-objects)
+- Repository is the only data access point; no direct Room calls outside it
 
-### Target Platforms
-- **Android**: Min SDK 21, Target SDK 34
-- **Desktop**: JVM 11+
-- **Shared Compose Runtime**: Used for UI across all platforms
+## Tech Stack
 
-## Build & Development Commands
+| Layer | Tech |
+|-------|------|
+| Testing | kotlin-test, MockK (all test doubles + verification) |
+| Persistence | Room (local data only) |
+| HTTP | Ktor (Spoonacular API client) |
+| DI | Pure Kotlin (manual factory wiring) |
+| State Mgmt | ViewModel + Compose State |
 
-### Build & Run
+## TDD: Test-First, Mandatory Coverage
 
-```bash
-# Android
-./gradlew :androidApp:assembleDebug        # Build debug APK
-./gradlew :androidApp:installDebug         # Build and install to connected device/emulator
+**Write tests FIRST** in `shared/src/commonTest/`:
+1. **ViewModels**: All. Mock repositories, verify state emissions & side effects.
+2. **UseCases**: All. Mock repositories, verify business logic, edge cases.
+3. **Repository**: RepositoryImpl & LocalDataSource. Mock Room DAOs, verify data flow.
+4. **Room**: All DAOs. Integration tests using in-memory database.
 
-# Desktop
-./gradlew :desktopApp:run                  # Run desktop app
-./gradlew :desktopApp:hotRun --auto        # Hot reload mode for development
-./gradlew :desktopApp:package              # Package for distribution
-./gradlew :desktopApp:packageDistributionForCurrentOS  # Full distribution build
+**Scope**: Happy path + relevant edge cases (null handling, empty lists, API errors).
 
-# Both
-./gradlew build                            # Build all modules
-./gradlew clean                            # Clean all build artifacts
-```
+**No test code in production** (`commonMain`). Always use MockK for test doubles.
 
-### Testing
+## Build & Test Commands
 
 ```bash
-# Android (instrumented tests and unit tests)
-./gradlew :shared:testAndroidHostTest      # Run Android host tests
-./gradlew :shared:testDebugUnitTest        # Unit tests for Android
-
-# Desktop (JVM)
-./gradlew :shared:jvmTest                  # Run desktop/JVM tests
-./gradlew :shared:jvmTest --tests "*TestClass*"  # Run specific test class
-
-# All tests
-./gradlew test                             # Run all tests
+./gradlew build                              # Build all
+./gradlew :desktopApp:run                   # Run Desktop (primary dev target)
+./gradlew :desktopApp:hotRun --auto         # Hot reload
+./gradlew :shared:commonTest                # Run all shared unit tests
+./gradlew :shared:commonTest --tests "*NameTest"  # Run single test class
+./gradlew :androidApp:installDebug          # Install Android APK
+./gradlew clean                              # Clean build artifacts
 ```
 
-### Other Useful Commands
+## Directory Map
 
-```bash
-./gradlew dependencies                     # View dependency tree
-./gradlew tasks                            # List all available Gradle tasks
-./gradlew -Dorg.gradle.warning.mode=all build  # Show all deprecation warnings
+```
+shared/src/
+├── commonMain/kotlin/
+│   ├── presentation/  (Views, ViewModels)
+│   ├── domain/        (UseCases, Repository interface)
+│   └── data/          (RepositoryImpl, Room, Ktor client)
+├── commonTest/        (Unit tests for all layers; Kotlin-test + MockK)
+├── androidMain/       (Only if platform-specific UI bindings needed)
+└── jvmMain/          (Desktop-only; minimal—prefer commonMain)
 ```
 
-## Key Architecture Notes
+## Key Rules
 
-### Compose Multiplatform Setup
-- **Shared UI code**: `shared/src/commonMain/` contains shared Compose UI and business logic
-- **Platform-specific UI**: Platform-specific UIs go in `androidMain/` or `jvmMain/` if needed
-- **Resources**: Compose resources are in `shared/src/commonMain/composeResources/`
+### Architecture & Design
+1. **Multiplatform First**: Write in `commonMain`. Desktop development is the primary focus.
+2. **Immutable Data Models**: Use Kotlin `data class` in domain & data layers.
+3. **No Static Singletons**: DI wiring at app bootstrap, pass dependencies explicitly.
+4. **Repository Pattern**: All data access through Repository; no DAO calls from UseCase.
+5. **ViewModel Scope**: Manages UI state only; never direct Room/API calls.
+6. **Compose Resources**: In `commonMain/composeResources/`; auto-generated accessors (`Res.kt`).
 
-### Module Organization
-- **shared**: Library module used by all platforms. Contains domain logic, data layer, and UI code
-- **androidApp**: Entry point for Android, depends on shared module
-- **desktopApp**: Entry point for Desktop, depends on shared module
+### UI State Pattern (mandatory)
+7. **Sealed State Interface**: Every screen must use `sealed interface ScreenState` or `sealed class ScreenState` with exactly three branches:
+   - `Loading` — UI shows progress indicator
+   - `Success(data)` — UI displays content
+   - `Error(exception)` — UI shows error message with retry option
+8. **Zero Unhandled States**: All state branches must be explicitly handled in UI composables (Kotlin exhaustive when). Empty lists are `Success(emptyList())`, not missing.
+9. **State Emissions**: ViewModel exposes state via `StateFlow<ScreenState>`, not scattered LiveData or reactive chains.
 
-### Compose Compiler & Plugin Configuration
-- Compose compiler plugin is configured in root `build.gradle.kts` (alias approach)
-- Each module that uses Compose must declare the compose plugin in its `build.gradle.kts`
-- Hot reload is supported on desktop via `./gradlew :desktopApp:hotRun --auto`
+### Clean Code Constraints (zero tolerance)
+10. **Function Size Limit**: Max 30 lines per function. If function exceeds 30 lines, extract helper functions.
+11. **Dead Code Purge**: Zero tolerance for unused imports, commented-out code blocks, or unreachable branches. Delete immediately.
+12. **No Magic Numbers/Strings**: All numeric literals and string constants must be named constants in companion objects or top-level `const val`. UI strings must use resource localization or defined constants, never hardcoded.
 
-## Dependencies & Versions
+## Gradle Conventions
 
-Dependency versions are centralized in `libs.versions.toml` (not shown but follows Gradle's catalog pattern). Key dependencies include:
-- **Compose Multiplatform**: Latest stable version
-- **Compose Material3**: For Material Design UI
-- **Jetpack Lifecycle**: ViewModel and Runtime Compose
-- **Kotlin Test**: For unit testing (multiplatform)
+- Type-safe accessors enabled: use `projects.shared`, `projects.androidApp`, etc.
+- Compose compiler plugin in root `build.gradle.kts` (alias pattern)
+- Dependency versions centralized in `libs.versions.toml`
 
-## Important Notes
+## Adding a Feature (TDD Order)
 
-### Platform Abstractions
-- Use `expect/actual` pattern for platform-specific implementations in Kotlin Multiplatform
-- For UI, keep Compose code in commonMain when possible; only split if truly platform-different
+1. Write `*Test.kt` in `commonTest/` (ViewModel, UseCase, Repository tests)
+2. Implement domain layer (UseCase, Repository interface)
+3. Implement data layer (RepositoryImpl, Room, Ktor)
+4. Implement presentation (ViewModel, Compose Views)
+5. Verify tests pass
 
-### Gradle Conventions
-- This project uses type-safe project accessors (enabled via `enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")`)
-- You can reference modules as `projects.shared`, `projects.androidApp`, etc., instead of string literals
+## CI/CD
 
-### No iOS Target
-- Currently configured for Android and Desktop only; iOS is not included in `settings.gradle.kts`
+Not yet configured. Build & tests must pass locally before merge to `master`.
 
-### Compose Resources
-- Resources (strings, images, etc.) are in `shared/src/commonMain/composeResources/`
-- Generated resource accessors are auto-generated in build output (e.g., `Res.kt`)
 
-## Testing Strategy
-
-- **Unit tests**: In `commonTest/` for shared logic (using Kotlin Test)
-- **Integration tests**: In `androidHostTest/` for Android and `jvmTest/` for Desktop
-- Run tests via IDE gutter buttons or Gradle commands above
-- Mock Android/Desktop platform code as needed for cross-platform testing
-
-## Common Development Tasks
-
-### Adding a New Feature
-1. Implement shared code in `shared/src/commonMain/kotlin/`
-2. If platform-specific logic is needed, add `expect` in common and `actual` in platform modules
-3. Add unit tests in `commonTest/`
-4. Test on both Android and Desktop
-
-### Running in IDE
-- Android: Use IDE run configurations or `./gradlew :androidApp:installDebug`
-- Desktop: Use IDE run configurations or `./gradlew :desktopApp:run`
-- Both support hot reload when configured in the IDE
-
-### Debugging
-- Android: Use standard Android Studio debugger
-- Desktop: Use IDE debugger or attach to running process
-- For Compose preview debugging, use Compose Preview pane in IDE (when available)
-
-## Git Workflow
-
-- Main branch: `master`
-- Follow conventional commits when possible
-- Build and tests should pass before merging (CI/CD not yet configured)

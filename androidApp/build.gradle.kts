@@ -22,6 +22,7 @@ dependencies {
 
 android {
     namespace = "com.pixies.recetario"
+    buildFeatures { buildConfig = true }
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -30,6 +31,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "SPOONACULAR_API_KEY", "\"${System.getenv("SPOONACULAR_API_KEY") ?: ""}\"")
     }
     packaging {
         resources {

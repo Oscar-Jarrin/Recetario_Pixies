@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlinJvm)
@@ -18,6 +19,17 @@ dependencies {
 compose.desktop {
     application {
         mainClass = "com.pixies.recetario.MainKt"
+
+        val localProperties = Properties().apply {
+            val propertiesFile = rootProject.file("local.properties")
+            if (propertiesFile.exists()) {
+                propertiesFile.inputStream().use { load(it) }
+            }
+        }
+
+        val apiKey = localProperties.getProperty("spoonacular.api.key") ?: ""
+
+        jvmArgs("-DSPOONACULAR_API_KEY=$apiKey")
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
