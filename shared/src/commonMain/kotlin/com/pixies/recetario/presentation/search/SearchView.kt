@@ -1,14 +1,12 @@
-package com.pixies.recetario.presentation.search
-
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+package com.pixies.recetario.presentation.search import androidx.compose.foundation.layout.Arrangement import androidx.compose.foundation.layout.Box import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -28,15 +26,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.pixies.recetario.domain.model.IngredientSearchResult
+import com.pixies.recetario.presentation.RETRY_LABEL
+import com.pixies.recetario.presentation.SEARCH_LABEL
+import com.pixies.recetario.presentation.SEARCH_PLACEHOLDER
 
 private const val SCREEN_PADDING_DP = 16
 private const val ITEM_SPACING_DP = 8
 private const val CHIP_SPACING_DP = 4
-private const val RETRY_LABEL = "Retry"
-private const val SEARCH_LABEL = "Search"
-private const val SEARCH_PLACEHOLDER = "e.g. flour, sugar, egg"
+private const val CARD_IMAGE_WIDTH_DP = 120
+private const val CARD_IMAGE_HEIGHT_DP = 170
 private const val IDLE_HINT = "Enter ingredients separated by commas"
 private val COLOR_USED = Color(0xFF2E7D32)
 private val COLOR_MISSING = Color(0xFFC62828)
@@ -117,11 +119,22 @@ private fun IngredientResultCard(result: IngredientSearchResult, onClick: () -> 
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(CHIP_SPACING_DP.dp)
     ) {
-        Column(modifier = Modifier.padding(ITEM_SPACING_DP.dp)) {
-            Text(text = result.title, style = MaterialTheme.typography.titleSmall)
-            IngredientChipGroup("Used", result.usedIngredients, COLOR_USED)
-            IngredientChipGroup("Missing", result.missingIngredients, COLOR_MISSING)
-            IngredientChipGroup("Unused", result.unusedIngredients, COLOR_UNUSED)
+        Row {
+            Column(
+                modifier = Modifier.weight(1f).padding(ITEM_SPACING_DP.dp),
+                verticalArrangement = Arrangement.spacedBy(CHIP_SPACING_DP.dp)
+            ) {
+                Text(text = result.title, style = MaterialTheme.typography.titleSmall)
+                IngredientChipGroup("Used", result.usedIngredients, COLOR_USED)
+                IngredientChipGroup("Missing", result.missingIngredients, COLOR_MISSING)
+                IngredientChipGroup("Unused", result.unusedIngredients, COLOR_UNUSED)
+            }
+            AsyncImage(
+                model = result.imageUrl.ifEmpty { null },
+                contentDescription = result.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.width(CARD_IMAGE_WIDTH_DP.dp).height(CARD_IMAGE_HEIGHT_DP.dp)
+            )
         }
     }
 }

@@ -29,20 +29,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.pixies.recetario.domain.model.RecipeOverview
+import com.pixies.recetario.presentation.RETRY_LABEL
+import com.pixies.recetario.presentation.SEARCH_LABEL
+import com.pixies.recetario.presentation.SEARCH_PLACEHOLDER
 
 private const val GRID_COLUMNS = 2
 private const val GRID_PADDING_DP = 8
 private const val CARD_PADDING_DP = 4
 private const val CARD_CONTENT_PADDING_DP = 8
 private const val IMAGE_HEIGHT_DP = 200
-private const val RETRY_LABEL = "Retry"
 private const val TITLE_MAX_LINES = 2
 private const val MINUTES_SUFFIX = " min"
 private const val SEARCH_H_PADDING_DP = 16
 private const val SEARCH_V_PADDING_DP = 8
 private const val SEARCH_SPACING_DP = 8
-private const val SEARCH_PLACEHOLDER = "e.g. flour, sugar, egg"
-private const val SEARCH_LABEL = "Search"
 
 @Composable
 fun HomeView(viewModel: HomeViewModel, onRecipeClick: (Int) -> Unit, onSearchClick: (String) -> Unit) {
