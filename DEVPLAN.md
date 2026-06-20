@@ -930,7 +930,38 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   }
   ```
 
-- [ ] Add entity to `AppDatabase`; expose DAO.
+- [ ] Add `RecipeInstructionStepEntity` to `@Database`, expose DAO, and bump `version` to **2**:
+  ```kotlin
+  @Database(
+      entities = [RecipeOverviewEntity::class, RecipeIngredientEntity::class, RecipeInstructionStepEntity::class],
+      version = 2
+  )
+  abstract class AppDatabase : RoomDatabase() {
+      abstract fun recipeOverviewDao(): RecipeOverviewDao
+      abstract fun recipeIngredientDao(): RecipeIngredientDao
+      abstract fun recipeInstructionStepDao(): RecipeInstructionStepDao
+  }
+  ```
+  Add `.fallbackToDestructiveMigration(true)` to the builder in both `DatabaseBuilder.android.kt`
+  and `DatabaseBuilder.jvm.kt` (dev-only — wipes cache on version upgrade, avoids writing SQL
+  migrations while the schema is still evolving).
+
+- [ ] Extract DAOs as named properties in `AppModule` and inject `stepDao` into
+  `RecipeRepositoryImpl`. Also expose `getRecipeInstructionsUseCase`:
+  ```kotlin
+  private val overviewDao    = database.recipeOverviewDao()
+  private val ingredientDao  = database.recipeIngredientDao()
+  private val stepDao        = database.recipeInstructionStepDao()   // new
+
+  private val recipeRepository: RecipeRepository = RecipeRepositoryImpl(
+      api          = apiService,
+      overviewDao  = overviewDao,
+      ingredientDao = ingredientDao,
+      stepDao      = stepDao
+  )
+
+  val getRecipeInstructionsUseCase = GetRecipeInstructionsUseCase(recipeRepository)
+  ```
 
 - [ ] Create `InstructionsMapper.kt`:
   ```kotlin
@@ -1018,7 +1049,17 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   - `when (state)`: `Loading` â†’ `CircularProgressIndicator`; `Error` â†’ error message + "Retry" button; `Success` â†’ `LazyColumn`.
   - For `Success`: iterate `instructions.instructions.entries`; for each group: if key is non-blank, render a section `Text(key)` header; then an indexed `Text` for each step. Extract `InstructionGroupSection` composable.
 
-- [ ] Wire into `AppNavGraph` for `Screen.RecipeDetail(id)`. Pass `id` from `HomeView`'s `onRecipeClick`.
+- [ ] Wire into `AppNavGraph` for `Screen.RecipeDetail(id)`. Extract the `id` argument from the
+  back-stack entry using `Screen.RecipeDetail.ARG_ID`:
+  ```kotlin
+  composable(Screen.RecipeDetail.ROUTE) { backStackEntry ->
+      val id = backStackEntry.arguments?.getString(Screen.RecipeDetail.ARG_ID)?.toIntOrNull()
+          ?: return@composable
+      val viewModel: RecipeDetailViewModel =
+          viewModel { RecipeDetailViewModel(module.getRecipeInstructionsUseCase) }
+      RecipeDetailView(viewModel = viewModel, recipeId = id)
+  }
+  ```
 
 - [ ] Run: `./gradlew :shared:commonTest --tests "*RecipeDetailViewModelTest"` â€” all pass. âœ“
 - [ ] Run desktop: `./gradlew :desktopApp:run` â€” click a recipe card â†’ detail screen shows grouped steps.
@@ -1044,7 +1085,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 
 - [ ] **GetAllWeeklyPlansUseCase** â€” happy path: returns list of all plans; empty list returned as `emptyList()` not exception.
 
-- [ ] **GetWeeklyPlanUseCase** â€” happy path: returns plan by name; plan not found â†’ `RecipeNotFoundException`-style exception.
+- [ ] **GetWeeklyPlanUseCase** â€” happy path: returns plan by name; plan not found â†’ `PlanNotFoundException`.
 
 - [ ] **SaveWeeklyPlanUseCase** â€” happy path: repository `savePlan` called with correct model; verify no exception on upsert.
 
@@ -1083,6 +1124,12 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   }
   ```
 
+- [ ] Add `PlanNotFoundException` to `AppExceptions.kt`:
+  ```kotlin
+  class PlanNotFoundException(name: String) : Exception("Plan '$name' not found")
+  ```
+  Use `PlanNotFoundException` (not `RecipeNotFoundException`) in `WeeklyPlanRepositoryImpl.getPlanByName`.
+
 - [ ] Create each use case as a single-method class delegating to repository. No business logic beyond delegation.
 
 - [ ] Run: `./gradlew :shared:commonTest --tests "*WeeklyPlanUseCase*"` â€” all pass. âœ“
@@ -1100,7 +1147,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 
 - [ ] **getPlanByName**: DAO returns entity + slots â†’ joined with `RecipeOverviewDao.getRecipeById` for each slot â†’ correct `WeeklyPlan` assembled.
 
-- [ ] **getPlanByName â€” unknown name**: DAO returns null â†’ throws named exception.
+- [ ] **getPlanByName â€” unknown name**: DAO returns null â†’ throws `PlanNotFoundException`.
 
 - [ ] **getAllPlans**: returns list of assembled `WeeklyPlan`; empty list returns `emptyList()`.
 
@@ -1142,7 +1189,42 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 
 - [ ] Create `WeeklyPlanRepositoryImpl` implementing `WeeklyPlanRepository`. Each function max 20 lines; extract helpers as needed.
 
-- [ ] Wire `WeeklyPlanRepositoryImpl` into `AppModule` alongside the recipe dependencies.
+- [ ] Add `WeeklyPlanEntity` and `WeeklyPlanSlotEntity` to `@Database` and bump `version` to **3**
+  (no change needed to `DatabaseBuilder` files — `fallbackToDestructiveMigration(true)` set in Phase 3
+  already handles this):
+  ```kotlin
+  @Database(
+      entities = [
+          RecipeOverviewEntity::class, RecipeIngredientEntity::class,
+          RecipeInstructionStepEntity::class,
+          WeeklyPlanEntity::class, WeeklyPlanSlotEntity::class
+      ],
+      version = 3
+  )
+  abstract class AppDatabase : RoomDatabase() {
+      // existing DAOs …
+      abstract fun weeklyPlanDao(): WeeklyPlanDao
+      abstract fun weeklyPlanSlotDao(): WeeklyPlanSlotDao
+  }
+  ```
+
+- [ ] Wire `WeeklyPlanRepositoryImpl` into `AppModule`. Note that `overviewDao` is already a named
+  property from Phase 3 — pass the **same instance** to both repositories (no duplicate DAO):
+  ```kotlin
+  private val weeklyPlanDao     = database.weeklyPlanDao()
+  private val weeklyPlanSlotDao = database.weeklyPlanSlotDao()
+
+  private val weeklyPlanRepository: WeeklyPlanRepository = WeeklyPlanRepositoryImpl(
+      planDao     = weeklyPlanDao,
+      slotDao     = weeklyPlanSlotDao,
+      overviewDao = overviewDao   // shared with recipeRepository
+  )
+
+  val getAllWeeklyPlansUseCase   = GetAllWeeklyPlansUseCase(weeklyPlanRepository)
+  val getWeeklyPlanUseCase      = GetWeeklyPlanUseCase(weeklyPlanRepository)
+  val saveWeeklyPlanUseCase     = SaveWeeklyPlanUseCase(weeklyPlanRepository)
+  val deleteWeeklyPlanUseCase   = DeleteWeeklyPlanUseCase(weeklyPlanRepository)
+  ```
 
 - [ ] Run: `./gradlew :shared:commonTest --tests "*WeeklyPlanRepositoryImplTest"` â€” all pass. âœ“
 
@@ -1198,6 +1280,13 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 
 - [ ] Create `PlannerViewModel` with methods: `loadAll()`, `createPlan(name)`, `deletePlan(id)`, `selectPlan(plan)`.
 
+- [ ] Extract `RecipeCard` from `HomeView.kt` into its own file **before** writing `PlanDetailView`:
+  - Move the composable (currently `private fun RecipeCard` at the bottom of `HomeView.kt`) to
+    `shared/src/commonMain/kotlin/com/pixies/recetario/presentation/home/RecipeCard.kt`.
+  - Remove the `private` modifier so it is accessible from the `planner` package.
+  - Update `HomeView.kt` to call the composable by its new import.
+  - This is a pure refactor; no test changes required.
+
 - [ ] Create `PlannerView.kt`:
   - Lists all plans with name and summary (e.g. "3/7 days filled").
   - FAB to create new plan (dialog for name input).
@@ -1206,7 +1295,8 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
 
 - [ ] Create `PlanDetailView.kt`:
   - 7-row grid: `Mon â€¦ Sun` | recipe card (or empty slot placeholder).
-  - Tapping an empty slot opens a recipe picker (reuses `RecipeCard` from HomeView).
+  - Tapping an empty slot opens a recipe picker (imports `RecipeCard` from
+    `com.pixies.recetario.presentation.home`).
   - Tapping a filled slot shows options: "Remove" or "Replace".
 
 - [ ] Wire both views into `AppNavGraph`.
