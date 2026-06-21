@@ -134,9 +134,9 @@ private fun IngredientResultCard(result: IngredientSearchResult, onClick: () -> 
                 verticalArrangement = Arrangement.spacedBy(CHIP_SPACING_DP.dp)
             ) {
                 Text(text = result.title, style = MaterialTheme.typography.titleSmall)
-                IngredientChipGroup("Used", result.usedIngredients, COLOR_USED)
-                IngredientChipGroup("Missing", result.missingIngredients, COLOR_MISSING)
-                IngredientChipGroup("Unused", result.unusedIngredients, COLOR_UNUSED)
+                IngredientChipGroup("Pedidos y Usados", result.usedIngredients, COLOR_USED)
+                IngredientChipGroup("Pedidos Pero no Usados", result.unusedIngredients, COLOR_UNUSED)
+                IngredientChipGroup("No Pedidos Pero Usados", result.missingIngredients, COLOR_MISSING)
             }
             AsyncImage(
                 model = result.imageUrl.ifEmpty { null },

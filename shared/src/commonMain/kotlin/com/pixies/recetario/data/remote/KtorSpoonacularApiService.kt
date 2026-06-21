@@ -23,7 +23,7 @@ class KtorSpoonacularApiService(private val client: HttpClient) : SpoonacularApi
         client.get("$BASE_URL/recipes/findByIngredients") {
             parameter("ingredients", ingredients)
             parameter("number", count)
-            parameter("ranking", 1)
+            parameter("ranking", MINIMIZE_MISSING_INGREDIENTS)
         }.body()
 
     override suspend fun getAnalyzedInstructions(id: Int): List<InstructionGroupDto> =
