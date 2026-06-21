@@ -53,7 +53,7 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
             val id = pendingRecipeId.takeIf { it != 0 } ?: return@composable
             val viewModel: RecipeDetailViewModel =
                 viewModel { RecipeDetailViewModel(module.getRecipeInstructionsUseCase) }
-            RecipeDetailView(viewModel = viewModel, recipeId = id)
+            RecipeDetailView(viewModel = viewModel, recipeId = id, onBack = { navController.popBackStack() })
         }
         composable(Screen.Planner.route) { }
         composable(Screen.PlannerDetail.ROUTE) { }

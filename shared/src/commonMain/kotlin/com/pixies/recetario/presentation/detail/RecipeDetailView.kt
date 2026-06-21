@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -24,25 +25,41 @@ private const val STEP_PADDING_DP = 8
 private const val GROUP_PADDING_DP = 12
 
 @Composable
-fun RecipeDetailView(viewModel: RecipeDetailViewModel, recipeId: Int) {
+fun RecipeDetailView(viewModel: RecipeDetailViewModel, recipeId: Int, onBack: () -> Unit) {
     LaunchedEffect(recipeId) { viewModel.load(recipeId) }
     val state by viewModel.state.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        when (val s = state) {
-            DetailState.Loading -> CircularProgressIndicator()
-            is DetailState.Success -> InstructionsList(s)
-            is DetailState.Error -> ErrorContent(
-                message = s.exception.message ?: "Unknown error",
-                onRetry = { viewModel.retry(recipeId) }
-            )
+    Column(modifier = Modifier.fillMaxSize()) {
+        Button(
+            onClick = onBack,
+            modifier = Modifier
+                .padding(SCREEN_PADDING_DP.dp)
+        ) {
+            Text("Atras")
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .padding(horizontal = SCREEN_PADDING_DP.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            when (val s = state) {
+                DetailState.Loading -> CircularProgressIndicator()
+                is DetailState.Success -> InstructionsList(s)
+                is DetailState.Error -> ErrorContent(
+                    message = s.exception.message ?: "Unknown error",
+                    onRetry = { viewModel.retry(recipeId) }
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun InstructionsList(state: DetailState.Success) {
-    LazyColumn(modifier = Modifier.fillMaxSize().padding(SCREEN_PADDING_DP.dp)) {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
         state.instructions.instructions.forEach { (groupName, steps) ->
             if (groupName.isNotEmpty()) {
                 item {
