@@ -1,6 +1,7 @@
 package com.pixies.recetario.data
 
 import com.pixies.recetario.data.local.dao.RecipeIngredientDao
+import com.pixies.recetario.data.local.dao.RecipeInstructionStepDao
 import com.pixies.recetario.data.local.dao.RecipeOverviewDao
 import com.pixies.recetario.data.local.entity.RecipeIngredientEntity
 import com.pixies.recetario.data.local.entity.RecipeOverviewEntity
@@ -27,7 +28,8 @@ class RecipeRepositoryImplTest {
     private val api: SpoonacularApiService = mockk()
     private val overviewDao: RecipeOverviewDao = mockk()
     private val ingredientDao: RecipeIngredientDao = mockk()
-    private val repository = RecipeRepositoryImpl(api, overviewDao, ingredientDao)
+    private val stepDao: RecipeInstructionStepDao = mockk()
+    private val repository = RecipeRepositoryImpl(api, overviewDao, ingredientDao, stepDao)
 
     @Test
     fun `happy path fetches from API, caches both tables, returns domain models`() = runTest {
@@ -107,7 +109,8 @@ class SearchByIngredientsTest {
     private val api: SpoonacularApiService = mockk()
     private val overviewDao: RecipeOverviewDao = mockk()
     private val ingredientDao: RecipeIngredientDao = mockk()
-    private val repository = RecipeRepositoryImpl(api, overviewDao, ingredientDao)
+    private val stepDao: RecipeInstructionStepDao = mockk()
+    private val repository = RecipeRepositoryImpl(api, overviewDao, ingredientDao, stepDao)
 
     @Test
     fun `happy path maps DTOs directly without overviewDao lookup`() = runTest {

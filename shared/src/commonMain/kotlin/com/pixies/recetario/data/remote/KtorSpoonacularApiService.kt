@@ -1,6 +1,7 @@
 package com.pixies.recetario.data.remote
 
 import com.pixies.recetario.data.remote.dto.IngredientSearchResponseDto
+import com.pixies.recetario.data.remote.dto.InstructionGroupDto
 import com.pixies.recetario.data.remote.dto.RandomRecipesResponseDto
 import com.pixies.recetario.data.remote.dto.RecipeOverviewDto
 import io.ktor.client.HttpClient
@@ -24,4 +25,7 @@ class KtorSpoonacularApiService(private val client: HttpClient) : SpoonacularApi
             parameter("number", count)
             parameter("ranking", 1)
         }.body()
+
+    override suspend fun getAnalyzedInstructions(id: Int): List<InstructionGroupDto> =
+        client.get("$BASE_URL/recipes/$id/analyzedInstructions").body()
 }

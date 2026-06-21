@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.pixies.recetario.di.AppModule
+import com.pixies.recetario.presentation.detail.RecipeDetailView
+import com.pixies.recetario.presentation.detail.RecipeDetailViewModel
 import com.pixies.recetario.presentation.home.HomeView
 import com.pixies.recetario.presentation.home.HomeViewModel
 import com.pixies.recetario.presentation.search.SearchView
@@ -19,13 +21,17 @@ import com.pixies.recetario.presentation.search.SearchViewModel
 @Composable
 fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNavController()) {
     var pendingSearchQuery by remember { mutableStateOf("") }
+    var pendingRecipeId by remember { mutableStateOf(0) }
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) {
             val viewModel: HomeViewModel = viewModel { HomeViewModel(module.getRandomRecipesUseCase) }
             HomeView(
                 viewModel = viewModel,
-                onRecipeClick = { id -> navController.navigate(Screen.RecipeDetail(id).route) },
+                onRecipeClick = { id ->
+                    pendingRecipeId = id
+                    navController.navigate(Screen.RecipeDetail(id).route)
+                },
                 onSearchClick = { query ->
                     pendingSearchQuery = query
                     navController.navigate(Screen.Search.route)
@@ -37,10 +43,18 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
             SearchView(
                 viewModel = viewModel,
                 initialQuery = pendingSearchQuery,
-                onRecipeClick = { id -> navController.navigate(Screen.RecipeDetail(id).route) }
+                onRecipeClick = { id ->
+                    pendingRecipeId = id
+                    navController.navigate(Screen.RecipeDetail(id).route)
+                }
             )
         }
-        composable(Screen.RecipeDetail.ROUTE) { }
+        composable(Screen.RecipeDetail.ROUTE) {
+            val id = pendingRecipeId.takeIf { it != 0 } ?: return@composable
+            val viewModel: RecipeDetailViewModel =
+                viewModel { RecipeDetailViewModel(module.getRecipeInstructionsUseCase) }
+            RecipeDetailView(viewModel = viewModel, recipeId = id)
+        }
         composable(Screen.Planner.route) { }
         composable(Screen.PlannerDetail.ROUTE) { }
     }

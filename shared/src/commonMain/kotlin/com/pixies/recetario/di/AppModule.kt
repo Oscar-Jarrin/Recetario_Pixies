@@ -7,6 +7,7 @@ import com.pixies.recetario.data.remote.buildSpoonacularClient
 import com.pixies.recetario.data.remote.httpEngine
 import com.pixies.recetario.domain.repository.RecipeRepository
 import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
+import com.pixies.recetario.domain.usecase.GetRecipeInstructionsUseCase
 import com.pixies.recetario.domain.usecase.SearchRecipesByIngredientsUseCase
 import io.ktor.client.HttpClient
 
@@ -18,12 +19,18 @@ class AppModule(val apiKey: String, val context: Any? = null) {
 
     private val apiService = KtorSpoonacularApiService(httpClient)
 
+    private val overviewDao = database.recipeOverviewDao()
+    private val ingredientDao = database.recipeIngredientDao()
+    private val stepDao = database.recipeInstructionStepDao()
+
     private val recipeRepository: RecipeRepository = RecipeRepositoryImpl(
         api = apiService,
-        overviewDao = database.recipeOverviewDao(),
-        ingredientDao = database.recipeIngredientDao()
+        overviewDao = overviewDao,
+        ingredientDao = ingredientDao,
+        stepDao = stepDao
     )
 
     val getRandomRecipesUseCase = GetRandomRecipesUseCase(recipeRepository)
     val searchRecipesByIngredientsUseCase = SearchRecipesByIngredientsUseCase(recipeRepository)
+    val getRecipeInstructionsUseCase = GetRecipeInstructionsUseCase(recipeRepository)
 }

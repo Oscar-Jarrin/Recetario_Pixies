@@ -7,3 +7,4 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 actual fun getDatabaseBuilder(context: Any?): RoomDatabase.Builder<AppDatabase> =
     Room.databaseBuilder<AppDatabase>(name = DB_NAME)
         .setDriver(BundledSQLiteDriver())
+        .fallbackToDestructiveMigration(true)
