@@ -13,4 +13,4 @@ data class IngredientSearchResponseDto(
 )
 
 @Serializable
-data class IngredientItemDto(val name: String)
+data class IngredientItemDto(val name: String, val originalName: String)

@@ -9,7 +9,7 @@ fun IngredientSearchResponseDto.toDomain(): IngredientSearchResult = IngredientS
     id = id,
     title = title,
     imageUrl = image,
-    missingIngredients = missedIngredients.map { it.name },
+    missingIngredients = missedIngredients.map { it.originalName },
     usedIngredients = usedIngredients.map { it.name },
     unusedIngredients = unusedIngredients.map { it.name }
 )
