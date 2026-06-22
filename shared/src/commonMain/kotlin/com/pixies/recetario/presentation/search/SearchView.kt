@@ -52,7 +52,7 @@ private val COLOR_MISSING = Color(0xFFC62828)
 private val COLOR_UNUSED = Color(0xFF757575)
 
 @Composable
-fun SearchView(viewModel: SearchViewModel, initialQuery: String = "", onRecipeClick: (Int) -> Unit) {
+fun SearchView(viewModel: SearchViewModel, initialQuery: String = "", onRecipeClick: (IngredientSearchResult) -> Unit) {
     var query by remember { mutableStateOf(initialQuery) }
     val state by viewModel.state.collectAsState()
 
@@ -113,10 +113,10 @@ private fun LoadingContent() {
 }
 
 @Composable
-private fun ResultsList(results: List<IngredientSearchResult>, onRecipeClick: (Int) -> Unit) {
+private fun ResultsList(results: List<IngredientSearchResult>, onRecipeClick: (IngredientSearchResult) -> Unit) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(results) { result ->
-            IngredientResultCard(result = result, onClick = { onRecipeClick(result.id) })
+            IngredientResultCard(result = result, onClick = { onRecipeClick(result) })
         }
     }
 }

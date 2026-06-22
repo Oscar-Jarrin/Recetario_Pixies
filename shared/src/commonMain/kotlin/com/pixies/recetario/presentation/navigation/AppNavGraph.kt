@@ -22,15 +22,19 @@ import com.pixies.recetario.presentation.search.SearchViewModel
 fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNavController()) {
     var pendingSearchQuery by remember { mutableStateOf("") }
     var pendingRecipeId by remember { mutableStateOf(0) }
+    var pendingRecipeTitle by remember { mutableStateOf("") }
+    var pendingRecipeImageUrl by remember { mutableStateOf("") }
 
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(Screen.Home.route) {
             val viewModel: HomeViewModel = viewModel { HomeViewModel(module.getRandomRecipesUseCase) }
             HomeView(
                 viewModel = viewModel,
-                onRecipeClick = { id ->
-                    pendingRecipeId = id
-                    navController.navigate(Screen.RecipeDetail(id).route)
+                onRecipeClick = { recipe ->
+                    pendingRecipeId = recipe.id
+                    pendingRecipeTitle = recipe.title
+                    pendingRecipeImageUrl = recipe.imageUrl
+                    navController.navigate(Screen.RecipeDetail(recipe.id).route)
                 },
                 onSearchClick = { query ->
                     pendingSearchQuery = query
@@ -43,9 +47,11 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
             SearchView(
                 viewModel = viewModel,
                 initialQuery = pendingSearchQuery,
-                onRecipeClick = { id ->
-                    pendingRecipeId = id
-                    navController.navigate(Screen.RecipeDetail(id).route)
+                onRecipeClick = { result ->
+                    pendingRecipeId = result.id
+                    pendingRecipeTitle = result.title
+                    pendingRecipeImageUrl = result.imageUrl
+                    navController.navigate(Screen.RecipeDetail(result.id).route)
                 }
             )
         }
@@ -53,7 +59,13 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
             val id = pendingRecipeId.takeIf { it != 0 } ?: return@composable
             val viewModel: RecipeDetailViewModel =
                 viewModel { RecipeDetailViewModel(module.getRecipeInstructionsUseCase) }
-            RecipeDetailView(viewModel = viewModel, recipeId = id, onBack = { navController.popBackStack() })
+            RecipeDetailView(
+                viewModel = viewModel,
+                recipeId = id,
+                recipeTitle = pendingRecipeTitle,
+                recipeImageUrl = pendingRecipeImageUrl,
+                onBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.Planner.route) { }
         composable(Screen.PlannerDetail.ROUTE) { }

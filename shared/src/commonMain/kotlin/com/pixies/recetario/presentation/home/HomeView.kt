@@ -48,7 +48,7 @@ private const val SEARCH_V_PADDING_DP = 8
 private const val SEARCH_SPACING_DP = 8
 
 @Composable
-fun HomeView(viewModel: HomeViewModel, onRecipeClick: (Int) -> Unit, onSearchClick: (String) -> Unit) {
+fun HomeView(viewModel: HomeViewModel, onRecipeClick: (RecipeOverview) -> Unit, onSearchClick: (String) -> Unit) {
     val state by viewModel.state.collectAsState()
     Column(modifier = Modifier.fillMaxSize()) {
         InlineSearchBar(onSearch = onSearchClick)
@@ -98,13 +98,13 @@ private fun LoadingContent() {
 }
 
 @Composable
-private fun RecipeGrid(recipes: List<RecipeOverview>, onRecipeClick: (Int) -> Unit) {
+private fun RecipeGrid(recipes: List<RecipeOverview>, onRecipeClick: (RecipeOverview) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(GRID_COLUMNS),
         modifier = Modifier.fillMaxSize().padding(GRID_PADDING_DP.dp)
     ) {
         items(recipes) { recipe ->
-            RecipeCard(recipe = recipe, onClick = { onRecipeClick(recipe.id) })
+            RecipeCard(recipe = recipe, onClick = { onRecipeClick(recipe) })
         }
     }
 }
