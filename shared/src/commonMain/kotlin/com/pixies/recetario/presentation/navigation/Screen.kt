@@ -5,6 +5,10 @@ sealed class Screen(val route: String) {
     object Search : Screen("search")
     object Planner : Screen("planner")
 
+    companion object {
+        val tabScreens: List<Screen> = listOf(Home, Search, Planner)
+    }
+
     data class RecipeDetail(val id: Int) : Screen("recipe/$id") {
         companion object {
             const val ROUTE = "recipe/{id}"

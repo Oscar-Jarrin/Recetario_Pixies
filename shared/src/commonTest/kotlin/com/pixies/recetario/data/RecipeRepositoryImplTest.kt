@@ -176,8 +176,8 @@ private fun fakeIngredientDto() = IngredientSearchResponseDto(
     id = 1,
     title = "Apple Cake",
     image = "https://example.com/cake.jpg",
-    missedIngredients = listOf(IngredientItemDto("sugar")),
-    usedIngredients = listOf(IngredientItemDto("apple")),
+    missedIngredients = listOf(IngredientItemDto("sugar", "sugar")),
+    usedIngredients = listOf(IngredientItemDto("apple", "apple")),
     unusedIngredients = emptyList()
 )
 

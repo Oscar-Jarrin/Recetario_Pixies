@@ -7,9 +7,13 @@ import androidx.room.RoomDatabaseConstructor
 import com.pixies.recetario.data.local.dao.RecipeIngredientDao
 import com.pixies.recetario.data.local.dao.RecipeInstructionStepDao
 import com.pixies.recetario.data.local.dao.RecipeOverviewDao
+import com.pixies.recetario.data.local.dao.WeeklyPlanDao
+import com.pixies.recetario.data.local.dao.WeeklyPlanSlotDao
 import com.pixies.recetario.data.local.entity.RecipeIngredientEntity
 import com.pixies.recetario.data.local.entity.RecipeInstructionStepEntity
 import com.pixies.recetario.data.local.entity.RecipeOverviewEntity
+import com.pixies.recetario.data.local.entity.WeeklyPlanEntity
+import com.pixies.recetario.data.local.entity.WeeklyPlanSlotEntity
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>
@@ -18,13 +22,17 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase>
     entities = [
         RecipeOverviewEntity::class,
         RecipeIngredientEntity::class,
-        RecipeInstructionStepEntity::class
+        RecipeInstructionStepEntity::class,
+        WeeklyPlanEntity::class,
+        WeeklyPlanSlotEntity::class
     ],
-    version = 2
+    version = 3
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun recipeOverviewDao(): RecipeOverviewDao
     abstract fun recipeIngredientDao(): RecipeIngredientDao
     abstract fun recipeInstructionStepDao(): RecipeInstructionStepDao
+    abstract fun weeklyPlanDao(): WeeklyPlanDao
+    abstract fun weeklyPlanSlotDao(): WeeklyPlanSlotDao
 }
