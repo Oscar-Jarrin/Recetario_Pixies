@@ -25,11 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.pixies.recetario.presentation.RecipeImage
 import com.pixies.recetario.presentation.RETRY_LABEL
 
 private const val SCREEN_PADDING_DP = 16
@@ -114,10 +113,9 @@ private fun RecipeHeader(imageUrl: String, title: String) {
         horizontalArrangement = Arrangement.spacedBy(HEADER_SPACING_DP.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AsyncImage(
-            model = imageUrl.ifEmpty { null },
+        RecipeImage(
+            imageUrl = imageUrl,
             contentDescription = title,
-            contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(HEADER_IMAGE_SIZE_DP.dp)
                 .clip(RoundedCornerShape(HEADER_IMAGE_CORNER_DP.dp))

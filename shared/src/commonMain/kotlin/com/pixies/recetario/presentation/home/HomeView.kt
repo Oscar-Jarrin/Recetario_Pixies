@@ -27,11 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.pixies.recetario.domain.model.RecipeOverview
+import com.pixies.recetario.presentation.RecipeImage
 import com.pixies.recetario.presentation.RETRY_LABEL
 import com.pixies.recetario.presentation.SEARCH_LABEL
 import com.pixies.recetario.presentation.SEARCH_PLACEHOLDER
@@ -116,10 +115,9 @@ private fun RecipeCard(recipe: RecipeOverview, onClick: () -> Unit) {
         modifier = Modifier.padding(CARD_PADDING_DP.dp).fillMaxWidth()
     ) {
         Column {
-            AsyncImage(
-                model = recipe.imageUrl.ifEmpty { null },
+            RecipeImage(
+                imageUrl = recipe.imageUrl,
                 contentDescription = recipe.title,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth().height(IMAGE_HEIGHT_DP.dp)
             )
             Column(modifier = Modifier.padding(CARD_CONTENT_PADDING_DP.dp)) {

@@ -29,11 +29,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.pixies.recetario.domain.model.IngredientSearchResult
+import com.pixies.recetario.presentation.RecipeImage
 import com.pixies.recetario.presentation.RETRY_LABEL
 import com.pixies.recetario.presentation.SEARCH_LABEL
 import com.pixies.recetario.presentation.SEARCH_PLACEHOLDER
@@ -138,10 +137,9 @@ private fun IngredientResultCard(result: IngredientSearchResult, onClick: () -> 
                 IngredientChipGroup("Pedidos Pero no Usados", result.unusedIngredients, COLOR_UNUSED)
                 IngredientChipGroup("No Pedidos Pero Usados", result.missingIngredients, COLOR_MISSING)
             }
-            AsyncImage(
-                model = result.imageUrl.ifEmpty { null },
+            RecipeImage(
+                imageUrl = result.imageUrl,
                 contentDescription = result.title,
-                contentScale = ContentScale.Crop,
                 modifier = Modifier.width(CARD_IMAGE_WIDTH_DP.dp).height(CARD_IMAGE_HEIGHT_DP.dp)
             )
         }
