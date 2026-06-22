@@ -13,8 +13,16 @@ class SearchViewModel(private val searchRecipes: SearchRecipesByIngredientsUseCa
     private val _state = MutableStateFlow<SearchState>(SearchState.Idle)
     val state: StateFlow<SearchState> = _state.asStateFlow()
 
+    private val _currentQuery = MutableStateFlow("")
+    val currentQuery: StateFlow<String> = _currentQuery.asStateFlow()
+
     fun search(query: String) {
-        if (query.isBlank()) return
+        _currentQuery.value = query
+
+        if (query.isBlank()) {
+            _state.value = SearchState.Idle
+            return
+        }
         val ingredients = query.split(",").map { it.trim() }.filter { it.isNotEmpty() }
         viewModelScope.launch {
             _state.value = SearchState.Loading
@@ -23,7 +31,12 @@ class SearchViewModel(private val searchRecipes: SearchRecipesByIngredientsUseCa
         }
     }
 
+    fun updateQuery(newQuery: String) {
+        _currentQuery.value = newQuery
+    }
+
     fun clearSearch() {
+        _currentQuery.value = ""
         _state.value = SearchState.Idle
     }
 }

@@ -26,9 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -53,17 +50,20 @@ private val COLOR_UNUSED = Color(0xFF757575)
 
 @Composable
 fun SearchView(viewModel: SearchViewModel, initialQuery: String = "", onRecipeClick: (IngredientSearchResult) -> Unit) {
-    var query by remember { mutableStateOf(initialQuery) }
+    val query by viewModel.currentQuery.collectAsState()
     val state by viewModel.state.collectAsState()
 
     LaunchedEffect(initialQuery) {
-        if (initialQuery.isNotBlank()) viewModel.search(initialQuery)
+        if (initialQuery.isNotBlank() && viewModel.currentQuery.value.isBlank()) {
+            viewModel.updateQuery(initialQuery)
+            viewModel.search(initialQuery)
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(SCREEN_PADDING_DP.dp)) {
         SearchBar(
             query = query,
-            onQueryChange = { query = it },
+            onQueryChange = { viewModel.updateQuery(it) },
             onSearch = { viewModel.search(query) }
         )
         when (val s = state) {
