@@ -40,8 +40,8 @@ import com.pixies.recetario.presentation.SEARCH_PLACEHOLDER
 private const val SCREEN_PADDING_DP = 16
 private const val ITEM_SPACING_DP = 8
 private const val CHIP_SPACING_DP = 4
-private const val CARD_IMAGE_WIDTH_DP = 120
-private const val CARD_IMAGE_HEIGHT_DP = 170
+private const val CARD_IMAGE_WIDTH_DP = 230
+private const val CARD_IMAGE_HEIGHT_DP = 230
 private const val IDLE_HINT = "Enter ingredients separated by commas"
 private val COLOR_USED = Color(0xFF2E7D32)
 private val COLOR_MISSING = Color(0xFFC62828)
