@@ -58,22 +58,25 @@ class PlannerViewModel(
     fun assignRecipe(dayIndex: Int, recipe: RecipeOverview) {
         val plan = currentPlan ?: return
         viewModelScope.launch {
-            val updated = plan.copy(daySlots = plan.daySlots + (dayIndex to recipe))
-            currentPlan = updated
-            runCatching { saveWeeklyPlan(updated) }
-            _detailState.value = (_detailState.value as? PlanDetailState.Success)
-                ?.copy(plan = updated) ?: _detailState.value
+            val existing = plan.daySlots[dayIndex].orEmpty()
+            persistAndEmit(plan.copy(daySlots = plan.daySlots + (dayIndex to existing + recipe)))
         }
     }
 
-    fun removeRecipe(dayIndex: Int) {
+    fun removeRecipe(dayIndex: Int, recipeId: Int) {
         val plan = currentPlan ?: return
         viewModelScope.launch {
-            val updated = plan.copy(daySlots = plan.daySlots - dayIndex)
-            currentPlan = updated
-            runCatching { saveWeeklyPlan(updated) }
-            _detailState.value = (_detailState.value as? PlanDetailState.Success)
-                ?.copy(plan = updated) ?: _detailState.value
+            val remaining = plan.daySlots[dayIndex].orEmpty().filter { it.id != recipeId }
+            val newSlots = if (remaining.isEmpty()) plan.daySlots - dayIndex
+                           else plan.daySlots + (dayIndex to remaining)
+            persistAndEmit(plan.copy(daySlots = newSlots))
         }
+    }
+
+    private suspend fun persistAndEmit(updated: WeeklyPlan) {
+        currentPlan = updated
+        runCatching { saveWeeklyPlan(updated) }
+        _detailState.value = (_detailState.value as? PlanDetailState.Success)
+            ?.copy(plan = updated) ?: _detailState.value
     }
 }

@@ -34,7 +34,7 @@ class GetAllWeeklyPlansUseCaseTest {
 internal fun fakeWeeklyPlan(
     id: Long = 1L,
     planName: String = "Test Plan",
-    daySlots: Map<Int, RecipeOverview> = emptyMap()
+    daySlots: Map<Int, List<RecipeOverview>> = emptyMap()
 ) = WeeklyPlan(id = id, planName = planName, daySlots = daySlots)
 
 internal fun fakeRecipeOverview(id: Int = 1) = RecipeOverview(

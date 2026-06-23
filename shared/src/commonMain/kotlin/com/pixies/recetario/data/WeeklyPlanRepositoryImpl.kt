@@ -38,12 +38,12 @@ class WeeklyPlanRepositoryImpl(
         slotDao.deleteSlotsForPlan(id)
     }
 
-    private suspend fun assembleSlots(planId: Long): Map<Int, RecipeOverview> =
+    private suspend fun assembleSlots(planId: Long): Map<Int, List<RecipeOverview>> =
         slotDao.getSlotsForPlan(planId)
             .mapNotNull { slot ->
                 overviewDao.getRecipeById(slot.recipeId)?.let { entity ->
                     slot.dayIndex to entity.toDomain()
                 }
             }
-            .toMap()
+            .groupBy({ it.first }, { it.second })
 }

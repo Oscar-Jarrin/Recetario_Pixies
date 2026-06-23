@@ -9,9 +9,11 @@ fun WeeklyPlan.toEntity(): WeeklyPlanEntity =
     WeeklyPlanEntity(id = id, planName = planName)
 
 fun WeeklyPlan.toSlotEntities(resolvedPlanId: Long): List<WeeklyPlanSlotEntity> =
-    daySlots.map { (dayIndex, recipe) ->
-        WeeklyPlanSlotEntity(planId = resolvedPlanId, dayIndex = dayIndex, recipeId = recipe.id)
+    daySlots.flatMap { (dayIndex, recipes) ->
+        recipes.map { recipe ->
+            WeeklyPlanSlotEntity(planId = resolvedPlanId, dayIndex = dayIndex, recipeId = recipe.id)
+        }
     }
 
-fun WeeklyPlanEntity.toDomain(daySlots: Map<Int, RecipeOverview>): WeeklyPlan =
+fun WeeklyPlanEntity.toDomain(daySlots: Map<Int, List<RecipeOverview>>): WeeklyPlan =
     WeeklyPlan(id = id, planName = planName, daySlots = daySlots)

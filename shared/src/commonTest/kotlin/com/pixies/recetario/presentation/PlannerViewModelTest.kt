@@ -119,13 +119,13 @@ class PlannerViewModelTest {
         vm.assignRecipe(dayIndex = 2, recipe = recipe)
         advanceUntilIdle()
 
-        coVerify { saveWeeklyPlan(match { it.daySlots[2] == recipe }) }
+        coVerify { saveWeeklyPlan(match { it.daySlots[2]?.contains(recipe) == true }) }
     }
 
     @Test
-    fun `removeRecipe removes slot from selected plan and saves`() = runTest(dispatcherRule.dispatcher) {
+    fun `removeRecipe removes specific recipe from day and saves`() = runTest(dispatcherRule.dispatcher) {
         val recipe = fakeRecipe()
-        val plan = fakePlan(id = 1L, name = "Plan A", daySlots = mapOf(3 to recipe))
+        val plan = fakePlan(id = 1L, name = "Plan A", daySlots = mapOf(3 to listOf(recipe)))
         coEvery { getAllWeeklyPlans() } returns listOf(plan)
         coJustRun { saveWeeklyPlan(any()) }
 
@@ -133,14 +133,52 @@ class PlannerViewModelTest {
         advanceUntilIdle()
 
         vm.selectPlan(plan)
-        vm.removeRecipe(dayIndex = 3)
+        vm.removeRecipe(dayIndex = 3, recipeId = recipe.id)
         advanceUntilIdle()
 
-        coVerify { saveWeeklyPlan(match { it.daySlots[3] == null }) }
+        coVerify { saveWeeklyPlan(match { it.daySlots[3].isNullOrEmpty() }) }
+    }
+
+    @Test
+    fun `removeRecipe with two recipes on same day keeps other recipe`() = runTest(dispatcherRule.dispatcher) {
+        val r1 = fakeRecipe()
+        val r2 = RecipeOverview(id = 2, title = "Other", imageUrl = "", readyInMinutes = 0, dishType = "")
+        val plan = fakePlan(id = 1L, name = "Plan A", daySlots = mapOf(0 to listOf(r1, r2)))
+        coEvery { getAllWeeklyPlans() } returns listOf(plan)
+        coJustRun { saveWeeklyPlan(any()) }
+
+        val vm = viewModel()
+        advanceUntilIdle()
+
+        vm.selectPlan(plan)
+        vm.removeRecipe(dayIndex = 0, recipeId = r1.id)
+        advanceUntilIdle()
+
+        coVerify { saveWeeklyPlan(match { it.daySlots[0] == listOf(r2) }) }
+    }
+
+    @Test
+    fun `assignRecipe twice on same day accumulates two recipes`() = runTest(dispatcherRule.dispatcher) {
+        val r1 = fakeRecipe()
+        val r2 = RecipeOverview(id = 2, title = "Other", imageUrl = "", readyInMinutes = 0, dishType = "")
+        val plan = fakePlan(id = 1L, name = "Plan A")
+        coEvery { getAllWeeklyPlans() } returns listOf(plan)
+        coJustRun { saveWeeklyPlan(any()) }
+
+        val vm = viewModel()
+        advanceUntilIdle()
+
+        vm.selectPlan(plan)
+        vm.assignRecipe(dayIndex = 1, recipe = r1)
+        advanceUntilIdle()
+        vm.assignRecipe(dayIndex = 1, recipe = r2)
+        advanceUntilIdle()
+
+        coVerify { saveWeeklyPlan(match { it.daySlots[1]?.size == 2 }) }
     }
 }
 
-private fun fakePlan(id: Long, name: String, daySlots: Map<Int, RecipeOverview> = emptyMap()) =
+private fun fakePlan(id: Long, name: String, daySlots: Map<Int, List<RecipeOverview>> = emptyMap()) =
     WeeklyPlan(id = id, planName = name, daySlots = daySlots)
 
 private fun fakeRecipe() = RecipeOverview(

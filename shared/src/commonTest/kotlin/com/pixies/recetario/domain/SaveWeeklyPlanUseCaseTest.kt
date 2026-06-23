@@ -26,7 +26,7 @@ class SaveWeeklyPlanUseCaseTest {
     @Test
     fun `saves plan with populated day slots`() = runTest {
         val recipe = fakeRecipeOverview()
-        val plan = fakeWeeklyPlan(daySlots = mapOf(0 to recipe, 3 to recipe))
+        val plan = fakeWeeklyPlan(daySlots = mapOf(0 to listOf(recipe), 3 to listOf(recipe)))
         coJustRun { repository.savePlan(plan) }
 
         useCase(plan)

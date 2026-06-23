@@ -29,7 +29,7 @@ class WeeklyPlanRepositoryImplTest {
     @Test
     fun `savePlan inserts entity and slot rows, deletes old slots first`() = runTest {
         val recipe = fakeOverviewDomain()
-        val plan = WeeklyPlan(id = 1L, planName = "Week A", daySlots = mapOf(0 to recipe))
+        val plan = WeeklyPlan(id = 1L, planName = "Week A", daySlots = mapOf(0 to listOf(recipe)))
         coEvery { planDao.insert(any()) } returns 1L
         coEvery { slotDao.deleteSlotsForPlan(1L) } just Runs
         coEvery { slotDao.insertAll(any()) } just Runs
@@ -55,7 +55,7 @@ class WeeklyPlanRepositoryImplTest {
 
         assertEquals("Week A", result.planName)
         assertEquals(1, result.daySlots.size)
-        assertEquals(99, result.daySlots[2]?.id)
+        assertEquals(99, result.daySlots[2]?.first()?.id)
     }
 
     @Test
@@ -85,6 +85,22 @@ class WeeklyPlanRepositoryImplTest {
         coEvery { planDao.getAllPlans() } returns emptyList()
 
         assertEquals(emptyList(), repository.getAllPlans())
+    }
+
+    @Test
+    fun `getPlanByName assembles two recipes on same day into a list`() = runTest {
+        coEvery { planDao.getPlanByName("Week A") } returns WeeklyPlanEntity(id = 1L, planName = "Week A")
+        coEvery { slotDao.getSlotsForPlan(1L) } returns listOf(
+            WeeklyPlanSlotEntity(planId = 1L, dayIndex = 2, recipeId = 99),
+            WeeklyPlanSlotEntity(planId = 1L, dayIndex = 2, recipeId = 100)
+        )
+        coEvery { overviewDao.getRecipeById(99) } returns fakeOverviewEntity(99)
+        coEvery { overviewDao.getRecipeById(100) } returns fakeOverviewEntity(100)
+
+        val result = repository.getPlanByName("Week A")
+
+        assertEquals(1, result.daySlots.size)
+        assertEquals(2, result.daySlots[2]?.size)
     }
 
     @Test

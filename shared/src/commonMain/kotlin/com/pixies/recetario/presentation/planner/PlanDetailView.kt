@@ -34,7 +34,7 @@ import com.pixies.recetario.presentation.RETRY_LABEL
 import com.pixies.recetario.presentation.search.SearchView
 import com.pixies.recetario.presentation.search.SearchViewModel
 
-private val DAY_LABELS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+private val DAY_LABELS = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 private const val ROW_PADDING_DP = 8
 private const val SECTION_PADDING_DP = 16
 
@@ -67,7 +67,7 @@ fun PlanDetailView(
                 DayGrid(
                     plan = s.plan,
                     onSlotClick = { dayIndex -> pickingForDay = dayIndex },
-                    onRemoveSlot = viewModel::removeRecipe
+                    onRemoveSlot = { dayIndex, recipeId -> viewModel.removeRecipe(dayIndex, recipeId) }
                 )
             }
             pickingForDay?.let { dayIndex ->
@@ -93,7 +93,7 @@ fun PlanDetailView(
 private fun DayGrid(
     plan: WeeklyPlan,
     onSlotClick: (Int) -> Unit,
-    onRemoveSlot: (Int) -> Unit
+    onRemoveSlot: (dayIndex: Int, recipeId: Int) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -106,9 +106,9 @@ private fun DayGrid(
             items(DAY_LABELS.indices.toList()) { dayIndex ->
                 DaySlotRow(
                     label = DAY_LABELS[dayIndex],
-                    recipe = plan.daySlots[dayIndex],
+                    recipes = plan.daySlots[dayIndex].orEmpty(),
                     onAddClick = { onSlotClick(dayIndex) },
-                    onRemoveClick = { onRemoveSlot(dayIndex) }
+                    onRemoveClick = { recipeId -> onRemoveSlot(dayIndex, recipeId) }
                 )
                 HorizontalDivider()
             }
@@ -119,31 +119,35 @@ private fun DayGrid(
 @Composable
 private fun DaySlotRow(
     label: String,
-    recipe: RecipeOverview?,
+    recipes: List<RecipeOverview>,
     onAddClick: () -> Unit,
-    onRemoveClick: () -> Unit
+    onRemoveClick: (recipeId: Int) -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(ROW_PADDING_DP.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().padding(ROW_PADDING_DP.dp)) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(end = ROW_PADDING_DP.dp)
+            modifier = Modifier.padding(bottom = ROW_PADDING_DP.dp)
         )
-        if (recipe != null) {
-            Text(
-                text = recipe.title,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
-            )
-            TextButton(onClick = onRemoveClick) { Text("Remove") }
-        } else {
-            TextButton(onClick = onAddClick, modifier = Modifier.weight(1f)) {
-                Text("+ Add recipe")
-            }
+        recipes.forEach { recipe ->
+            RecipeItemRow(recipe = recipe, onRemove = { onRemoveClick(recipe.id) })
         }
+        TextButton(onClick = onAddClick) { Text("+ Agregar receta") }
+    }
+}
+
+@Composable
+private fun RecipeItemRow(recipe: RecipeOverview, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = recipe.title,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.weight(1f)
+        )
+        TextButton(onClick = onRemove) { Text("Quitar") }
     }
 }
 
