@@ -33,6 +33,7 @@ class WeeklyPlanRepositoryImplTest {
         coEvery { planDao.insert(any()) } returns 1L
         coEvery { slotDao.deleteSlotsForPlan(1L) } just Runs
         coEvery { slotDao.insertAll(any()) } just Runs
+        coEvery { overviewDao.insertAll(any()) } just Runs
 
         repository.savePlan(plan)
 
@@ -41,6 +42,19 @@ class WeeklyPlanRepositoryImplTest {
             slotDao.deleteSlotsForPlan(1L)
             slotDao.insertAll(any())
         }
+        coVerify { overviewDao.insertAll(match { it.any { e -> e.id == recipe.id } }) }
+    }
+
+    @Test
+    fun `savePlan with empty slots does not call overviewDao insertAll`() = runTest {
+        val plan = WeeklyPlan(id = 1L, planName = "Week A", daySlots = emptyMap())
+        coEvery { planDao.insert(any()) } returns 1L
+        coEvery { slotDao.deleteSlotsForPlan(1L) } just Runs
+        coEvery { slotDao.insertAll(any()) } just Runs
+
+        repository.savePlan(plan)
+
+        coVerify(exactly = 0) { overviewDao.insertAll(any()) }
     }
 
     @Test

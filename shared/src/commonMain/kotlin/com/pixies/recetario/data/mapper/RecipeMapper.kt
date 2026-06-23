@@ -31,3 +31,11 @@ fun RecipeOverviewEntity.toDomain(): RecipeOverview = RecipeOverview(
     readyInMinutes = readyInMinutes,
     dishType = dishType
 )
+
+fun RecipeOverview.toEntity(): RecipeOverviewEntity = RecipeOverviewEntity(
+    id = id,
+    title = title,
+    imageUrl = imageUrl,
+    readyInMinutes = readyInMinutes,
+    dishType = dishType
+)

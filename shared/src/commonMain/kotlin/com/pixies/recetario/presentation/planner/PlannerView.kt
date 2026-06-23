@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,8 @@ private const val PLAN_LIST_PADDING_DP = 8
 fun PlannerView(viewModel: PlannerViewModel, onPlanClick: (WeeklyPlan) -> Unit) {
     val state by viewModel.plannerState.collectAsState()
     var showCreateDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) { viewModel.loadAll() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when (val s = state) {

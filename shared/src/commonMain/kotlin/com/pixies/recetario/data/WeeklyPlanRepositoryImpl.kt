@@ -31,6 +31,8 @@ class WeeklyPlanRepositoryImpl(
         val resolvedId = planDao.insert(plan.toEntity())
         slotDao.deleteSlotsForPlan(resolvedId)
         slotDao.insertAll(plan.toSlotEntities(resolvedId))
+        val recipes = plan.daySlots.values.flatten()
+        if (recipes.isNotEmpty()) overviewDao.insertAll(recipes.map { it.toEntity() })
     }
 
     override suspend fun deletePlan(id: Long) {
