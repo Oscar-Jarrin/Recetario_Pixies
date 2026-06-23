@@ -110,7 +110,7 @@ private fun PlanRow(plan: WeeklyPlan, onClick: () -> Unit, onDelete: () -> Unit)
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            TextButton(onClick = onDelete) { Text("Borrar") }
+            TextButton(onClick = onDelete) { Text("Delete") }
         }
     }
 }
