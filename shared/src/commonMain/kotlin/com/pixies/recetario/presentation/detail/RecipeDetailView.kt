@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.pixies.recetario.presentation.RecipeImage
 import com.pixies.recetario.presentation.RETRY_LABEL
+import com.pixies.recetario.presentation.UNKNOWN_ERROR
 
 private const val SCREEN_PADDING_DP = 16
 private const val STEP_PADDING_DP = 8
@@ -54,7 +55,7 @@ fun RecipeDetailView(
             onClick = onBack,
             modifier = Modifier.padding(SCREEN_PADDING_DP.dp)
         ) {
-            Text("Atras")
+            Text("Back")
         }
 
         Box(
@@ -68,7 +69,7 @@ fun RecipeDetailView(
                 DetailState.Loading -> CircularProgressIndicator()
                 is DetailState.Success -> InstructionsList(s, recipeTitle, recipeImageUrl)
                 is DetailState.Error -> ErrorContent(
-                    message = s.exception.message ?: "Unknown error",
+                    message = s.exception.message ?: UNKNOWN_ERROR,
                     onRetry = { viewModel.retry(recipeId) }
                 )
             }

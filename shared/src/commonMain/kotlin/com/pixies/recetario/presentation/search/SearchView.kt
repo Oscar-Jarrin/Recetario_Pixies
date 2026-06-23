@@ -133,9 +133,9 @@ private fun IngredientResultCard(result: IngredientSearchResult, onClick: () -> 
                 verticalArrangement = Arrangement.spacedBy(CHIP_SPACING_DP.dp)
             ) {
                 Text(text = result.title, style = MaterialTheme.typography.titleSmall)
-                IngredientChipGroup("Similares Usados", result.usedIngredients, COLOR_USED)
-                IngredientChipGroup("Pedidos Pero no Usados", result.unusedIngredients, COLOR_UNUSED)
-                IngredientChipGroup("No Pedidos Pero Usados", result.missingIngredients, COLOR_MISSING)
+                IngredientChipGroup("Similar used Ingredients", result.usedIngredients, COLOR_USED)
+                IngredientChipGroup("Requested but not used", result.unusedIngredients, COLOR_UNUSED)
+                IngredientChipGroup("Not requested but used", result.missingIngredients, COLOR_MISSING)
             }
             RecipeImage(
                 imageUrl = result.imageUrl,

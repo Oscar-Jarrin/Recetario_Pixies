@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 private data class TabItem(val screen: Screen, val label: String)
 
 private val TABS = listOf(
-    TabItem(Screen.Home, "Descubrir"),
-    TabItem(Screen.Search, "Buscar"),
-    TabItem(Screen.Planner, "Planeador")
+    TabItem(Screen.Home, "Discover"),
+    TabItem(Screen.Search, "Search"),
+    TabItem(Screen.Planner, "Planner")
 )
 
 @Composable
