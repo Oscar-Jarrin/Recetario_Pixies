@@ -6,7 +6,6 @@ import com.pixies.recetario.domain.model.RecipeOverview
 import com.pixies.recetario.domain.model.WeeklyPlan
 import com.pixies.recetario.domain.usecase.DeleteWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.GetAllWeeklyPlansUseCase
-import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
 import com.pixies.recetario.domain.usecase.SaveWeeklyPlanUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +15,7 @@ import kotlinx.coroutines.launch
 class PlannerViewModel(
     private val getAllWeeklyPlans: GetAllWeeklyPlansUseCase,
     private val saveWeeklyPlan: SaveWeeklyPlanUseCase,
-    private val deleteWeeklyPlan: DeleteWeeklyPlanUseCase,
-    private val getRecipes: GetRandomRecipesUseCase
+    private val deleteWeeklyPlan: DeleteWeeklyPlanUseCase
 ) : ViewModel() {
 
     private val _plannerState = MutableStateFlow<PlannerState>(PlannerState.Loading)
@@ -54,11 +52,7 @@ class PlannerViewModel(
 
     fun selectPlan(plan: WeeklyPlan) {
         currentPlan = plan
-        viewModelScope.launch {
-            _detailState.value = PlanDetailState.Loading
-            val recipes = runCatching { getRecipes() }.getOrDefault(emptyList())
-            _detailState.value = PlanDetailState.Success(plan = plan, availableRecipes = recipes)
-        }
+        _detailState.value = PlanDetailState.Success(plan = plan)
     }
 
     fun assignRecipe(dayIndex: Int, recipe: RecipeOverview) {

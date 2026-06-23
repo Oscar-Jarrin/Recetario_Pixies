@@ -6,7 +6,6 @@ import com.pixies.recetario.domain.model.RecipeOverview
 import com.pixies.recetario.domain.model.WeeklyPlan
 import com.pixies.recetario.domain.usecase.DeleteWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.GetAllWeeklyPlansUseCase
-import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
 import com.pixies.recetario.domain.usecase.SaveWeeklyPlanUseCase
 import com.pixies.recetario.presentation.planner.PlannerState
 import com.pixies.recetario.presentation.planner.PlannerViewModel
@@ -30,7 +29,6 @@ class PlannerViewModelTest {
     private val getAllWeeklyPlans: GetAllWeeklyPlansUseCase = mockk()
     private val saveWeeklyPlan: SaveWeeklyPlanUseCase = mockk()
     private val deleteWeeklyPlan: DeleteWeeklyPlanUseCase = mockk()
-    private val getRecipes: GetRandomRecipesUseCase = mockk()
 
     @BeforeTest
     fun setUp() = dispatcherRule.before()
@@ -41,14 +39,12 @@ class PlannerViewModelTest {
     private fun viewModel() = PlannerViewModel(
         getAllWeeklyPlans = getAllWeeklyPlans,
         saveWeeklyPlan = saveWeeklyPlan,
-        deleteWeeklyPlan = deleteWeeklyPlan,
-        getRecipes = getRecipes
+        deleteWeeklyPlan = deleteWeeklyPlan
     )
 
     @Test
     fun `initial state is Loading`() = runTest(dispatcherRule.dispatcher) {
         coEvery { getAllWeeklyPlans() } returns emptyList()
-        coEvery { getRecipes() } returns emptyList()
 
         val vm = viewModel()
 
@@ -59,7 +55,6 @@ class PlannerViewModelTest {
     fun `loadAll transitions to Success with plans`() = runTest(dispatcherRule.dispatcher) {
         val plans = listOf(fakePlan(1L, "Plan A"), fakePlan(2L, "Plan B"))
         coEvery { getAllWeeklyPlans() } returns plans
-        coEvery { getRecipes() } returns emptyList()
 
         val vm = viewModel()
         advanceUntilIdle()
@@ -71,7 +66,6 @@ class PlannerViewModelTest {
     fun `loadAll transitions to Error on exception`() = runTest(dispatcherRule.dispatcher) {
         val exception = NetworkException(RuntimeException("fail"))
         coEvery { getAllWeeklyPlans() } throws exception
-        coEvery { getRecipes() } returns emptyList()
 
         val vm = viewModel()
         advanceUntilIdle()
@@ -84,7 +78,6 @@ class PlannerViewModelTest {
     @Test
     fun `createPlan calls savePlan with empty slots then refreshes list`() = runTest(dispatcherRule.dispatcher) {
         coEvery { getAllWeeklyPlans() } returns emptyList()
-        coEvery { getRecipes() } returns emptyList()
         coJustRun { saveWeeklyPlan(any()) }
 
         val vm = viewModel()
@@ -100,7 +93,6 @@ class PlannerViewModelTest {
     @Test
     fun `deletePlan calls deleteWeeklyPlan and refreshes list`() = runTest(dispatcherRule.dispatcher) {
         coEvery { getAllWeeklyPlans() } returns emptyList()
-        coEvery { getRecipes() } returns emptyList()
         coJustRun { deleteWeeklyPlan(5L) }
 
         val vm = viewModel()
@@ -118,7 +110,6 @@ class PlannerViewModelTest {
         val plan = fakePlan(id = 1L, name = "Plan A")
         val recipe = fakeRecipe()
         coEvery { getAllWeeklyPlans() } returns listOf(plan)
-        coEvery { getRecipes() } returns listOf(recipe)
         coJustRun { saveWeeklyPlan(any()) }
 
         val vm = viewModel()
@@ -136,7 +127,6 @@ class PlannerViewModelTest {
         val recipe = fakeRecipe()
         val plan = fakePlan(id = 1L, name = "Plan A", daySlots = mapOf(3 to recipe))
         coEvery { getAllWeeklyPlans() } returns listOf(plan)
-        coEvery { getRecipes() } returns listOf(recipe)
         coJustRun { saveWeeklyPlan(any()) }
 
         val vm = viewModel()

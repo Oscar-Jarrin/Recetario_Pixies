@@ -42,9 +42,11 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
         PlannerViewModel(
             getAllWeeklyPlans = module.getAllWeeklyPlansUseCase,
             saveWeeklyPlan = module.saveWeeklyPlanUseCase,
-            deleteWeeklyPlan = module.deleteWeeklyPlanUseCase,
-            getRecipes = module.getRandomRecipesUseCase
+            deleteWeeklyPlan = module.deleteWeeklyPlanUseCase
         )
+    }
+    val plannerSearchViewModel: SearchViewModel = viewModel(key = "plannerSearch") {
+        SearchViewModel(module.searchRecipesByIngredientsUseCase)
     }
 
     Scaffold(
@@ -119,6 +121,7 @@ fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNa
             composable(Screen.PlannerDetail.ROUTE) {
                 PlanDetailView(
                     viewModel = plannerViewModel,
+                    searchViewModel = plannerSearchViewModel,
                     onBack = { navController.popBackStack() }
                 )
             }

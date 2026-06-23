@@ -11,11 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,18 +27,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import com.pixies.recetario.domain.model.IngredientSearchResult
 import com.pixies.recetario.domain.model.RecipeOverview
 import com.pixies.recetario.domain.model.WeeklyPlan
 import com.pixies.recetario.presentation.RETRY_LABEL
-import com.pixies.recetario.presentation.home.RecipeCard
+import com.pixies.recetario.presentation.search.SearchView
+import com.pixies.recetario.presentation.search.SearchViewModel
 
 private val DAY_LABELS = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
 private const val ROW_PADDING_DP = 8
 private const val SECTION_PADDING_DP = 16
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlanDetailView(viewModel: PlannerViewModel, onBack: () -> Unit) {
+fun PlanDetailView(
+    viewModel: PlannerViewModel,
+    searchViewModel: SearchViewModel,
+    onBack: () -> Unit
+) {
     val state by viewModel.detailState.collectAsState()
     var pickingForDay by remember { mutableStateOf<Int?>(null) }
 
@@ -55,14 +63,19 @@ fun PlanDetailView(viewModel: PlannerViewModel, onBack: () -> Unit) {
                 onRemoveSlot = viewModel::removeRecipe
             )
             pickingForDay?.let { dayIndex ->
-                RecipePickerDialog(
-                    recipes = s.availableRecipes,
-                    onPick = { recipe ->
-                        viewModel.assignRecipe(dayIndex, recipe)
-                        pickingForDay = null
-                    },
-                    onDismiss = { pickingForDay = null }
-                )
+                val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+                ModalBottomSheet(
+                    onDismissRequest = { pickingForDay = null },
+                    sheetState = sheetState
+                ) {
+                    SearchView(
+                        viewModel = searchViewModel,
+                        onRecipeClick = { result ->
+                            viewModel.assignRecipe(dayIndex, result.toRecipeOverview())
+                            pickingForDay = null
+                        }
+                    )
+                }
             }
         }
     }
@@ -127,37 +140,6 @@ private fun DaySlotRow(
 }
 
 @Composable
-private fun RecipePickerDialog(
-    recipes: List<RecipeOverview>,
-    onPick: (RecipeOverview) -> Unit,
-    onDismiss: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = MaterialTheme.shapes.large) {
-            Column(modifier = Modifier.padding(SECTION_PADDING_DP.dp)) {
-                Text("Elige una receta", style = MaterialTheme.typography.titleMedium)
-                if (recipes.isEmpty()) {
-                    Text(
-                        "No hay recetas guardadas. Ve a Inicio primero.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = ROW_PADDING_DP.dp)
-                    )
-                } else {
-                    LazyColumn {
-                        items(recipes) { recipe ->
-                            RecipeCard(recipe = recipe, onClick = { onPick(recipe) })
-                        }
-                    }
-                }
-                TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
-                    Text("Cancelar")
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun DetailError(message: String, onRetry: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -168,3 +150,11 @@ private fun DetailError(message: String, onRetry: () -> Unit) {
         Button(onClick = onRetry) { Text(RETRY_LABEL) }
     }
 }
+
+private fun IngredientSearchResult.toRecipeOverview() = RecipeOverview(
+    id = id,
+    title = title,
+    imageUrl = imageUrl,
+    readyInMinutes = 0,
+    dishType = ""
+)
