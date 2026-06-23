@@ -57,11 +57,19 @@ fun PlanDetailView(
             onRetry = onBack
         )
         is PlanDetailState.Success -> {
-            DayGrid(
-                plan = s.plan,
-                onSlotClick = { dayIndex -> pickingForDay = dayIndex },
-                onRemoveSlot = viewModel::removeRecipe
-            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier.padding(SECTION_PADDING_DP.dp)
+                ) {
+                    Text("Back")
+                }
+                DayGrid(
+                    plan = s.plan,
+                    onSlotClick = { dayIndex -> pickingForDay = dayIndex },
+                    onRemoveSlot = viewModel::removeRecipe
+                )
+            }
             pickingForDay?.let { dayIndex ->
                 val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                 ModalBottomSheet(
