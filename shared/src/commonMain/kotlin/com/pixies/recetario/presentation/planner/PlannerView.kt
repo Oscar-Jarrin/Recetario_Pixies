@@ -29,6 +29,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.pixies.recetario.domain.model.WeeklyPlan
 import com.pixies.recetario.presentation.RETRY_LABEL
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 
 private const val FAB_PADDING_DP = 16
 private const val CARD_PADDING_DP = 8
@@ -107,9 +115,12 @@ private fun PlanRow(plan: WeeklyPlan, onClick: () -> Unit, onDelete: () -> Unit)
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun CreatePlanDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("New plan") },
@@ -118,7 +129,23 @@ private fun CreatePlanDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit)
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Plan name") },
-                singleLine = true
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    if (name.isNotBlank()) {
+                        onConfirm(name.trim())
+                        keyboardController?.hide()
+                    }
+                }),
+                modifier = Modifier.onKeyEvent {
+                    if (it.key == Key.Enter && name.isNotBlank()) {
+                        onConfirm(name.trim())
+                        keyboardController?.hide()
+                        true
+                    } else {
+                        false
+                    }
+                }
             )
         },
         confirmButton = {
