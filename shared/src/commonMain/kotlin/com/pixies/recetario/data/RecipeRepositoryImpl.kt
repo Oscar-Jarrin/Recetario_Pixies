@@ -24,8 +24,8 @@ class RecipeRepositoryImpl(
     private val stepDao: RecipeInstructionStepDao
 ) : RecipeRepository {
 
-    override suspend fun getRandomRecipes(count: Int): List<RecipeOverview> =
-        runCatching { fetchAndCache(count) }.getOrElse { fallbackToCache() }
+    override suspend fun getRandomRecipes(): List<RecipeOverview> =
+        runCatching { fetchAndCache(RANDOM_RECIPES_COUNT) }.getOrElse { fallbackToCache() }
 
     override suspend fun searchByIngredients(ingredients: List<String>): List<IngredientSearchResult> =
         runCatching { fetchIngredientResults(ingredients) }
