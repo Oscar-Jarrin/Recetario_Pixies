@@ -132,7 +132,7 @@ private fun DaySlotRow(
         recipes.forEach { recipe ->
             RecipeItemRow(recipe = recipe, onRemove = { onRemoveClick(recipe.id) })
         }
-        TextButton(onClick = onAddClick) { Text("+ Agregar receta") }
+        TextButton(onClick = onAddClick) { Text("+ Add Recipe") }
     }
 }
 
@@ -147,7 +147,7 @@ private fun RecipeItemRow(recipe: RecipeOverview, onRemove: () -> Unit) {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.weight(1f)
         )
-        TextButton(onClick = onRemove) { Text("Quitar") }
+        TextButton(onClick = onRemove) { Text("Remove") }
     }
 }
 
