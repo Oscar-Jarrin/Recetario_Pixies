@@ -1,6 +1,6 @@
 package com.pixies.recetario.domain
 
-import com.pixies.recetario.domain.repository.WeeklyPlanRepository
+import com.pixies.recetario.domain.repository.WeeklyPlanWriter
 import com.pixies.recetario.domain.usecase.DeleteWeeklyPlanUseCase
 import io.mockk.coJustRun
 import io.mockk.coVerify
@@ -10,7 +10,7 @@ import kotlin.test.Test
 
 class DeleteWeeklyPlanUseCaseTest {
 
-    private val repository: WeeklyPlanRepository = mockk()
+    private val repository: WeeklyPlanWriter = mockk()
     private val useCase = DeleteWeeklyPlanUseCase(repository)
 
     @Test

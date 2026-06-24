@@ -37,7 +37,7 @@ class RecipeRepositoryImplTest {
         coEvery { overviewDao.insertAll(any()) } just Runs
         coEvery { ingredientDao.insertAll(any()) } just Runs
 
-        val result = repository.getRandomRecipes(10)
+        val result = repository.getRandomRecipes()
 
         coVerify(exactly = 1) { overviewDao.insertAll(any()) }
         coVerify(exactly = 1) { ingredientDao.insertAll(any()) }
@@ -49,7 +49,7 @@ class RecipeRepositoryImplTest {
         coEvery { api.getRandomRecipes(any()) } throws NetworkException(RuntimeException("no internet"))
         coEvery { overviewDao.getAllRecipes() } returns listOf(fakeEntity())
 
-        val result = repository.getRandomRecipes(10)
+        val result = repository.getRandomRecipes()
 
         coVerify(exactly = 0) { overviewDao.insertAll(any()) }
         coVerify(exactly = 1) { overviewDao.getAllRecipes() }
@@ -61,7 +61,7 @@ class RecipeRepositoryImplTest {
         coEvery { api.getRandomRecipes(any()) } throws QuotaExhaustedException()
         coEvery { overviewDao.getAllRecipes() } returns listOf(fakeEntity())
 
-        val result = repository.getRandomRecipes(10)
+        val result = repository.getRandomRecipes()
 
         coVerify(exactly = 0) { overviewDao.insertAll(any()) }
         coVerify(exactly = 1) { overviewDao.getAllRecipes() }
@@ -73,7 +73,7 @@ class RecipeRepositoryImplTest {
         coEvery { api.getRandomRecipes(any()) } throws NetworkException(RuntimeException("offline"))
         coEvery { overviewDao.getAllRecipes() } returns emptyList()
 
-        val result = repository.getRandomRecipes(10)
+        val result = repository.getRandomRecipes()
 
         assertEquals(emptyList(), result)
     }

@@ -2,7 +2,7 @@ package com.pixies.recetario.domain
 
 import com.pixies.recetario.domain.model.RecipeOverview
 import com.pixies.recetario.domain.model.WeeklyPlan
-import com.pixies.recetario.domain.repository.WeeklyPlanRepository
+import com.pixies.recetario.domain.repository.WeeklyPlanReader
 import com.pixies.recetario.domain.usecase.GetAllWeeklyPlansUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 class GetAllWeeklyPlansUseCaseTest {
 
-    private val repository: WeeklyPlanRepository = mockk()
+    private val repository: WeeklyPlanReader = mockk()
     private val useCase = GetAllWeeklyPlansUseCase(repository)
 
     @Test

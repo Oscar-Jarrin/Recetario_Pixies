@@ -15,14 +15,16 @@ import com.pixies.recetario.domain.exception.RecipeNotFoundException
 import com.pixies.recetario.domain.model.IngredientSearchResult
 import com.pixies.recetario.domain.model.RecipeInstructions
 import com.pixies.recetario.domain.model.RecipeOverview
-import com.pixies.recetario.domain.repository.RecipeRepository
+import com.pixies.recetario.domain.repository.IngredientSearchSource
+import com.pixies.recetario.domain.repository.RandomRecipesSource
+import com.pixies.recetario.domain.repository.RecipeInstructionsSource
 
 class RecipeRepositoryImpl(
     private val api: SpoonacularApiService,
     private val overviewDao: RecipeOverviewDao,
     private val ingredientDao: RecipeIngredientDao,
     private val stepDao: RecipeInstructionStepDao
-) : RecipeRepository {
+) : RandomRecipesSource, IngredientSearchSource, RecipeInstructionsSource {
 
     override suspend fun getRandomRecipes(): List<RecipeOverview> =
         runCatching { fetchAndCache(RANDOM_RECIPES_COUNT) }.getOrElse { fallbackToCache() }

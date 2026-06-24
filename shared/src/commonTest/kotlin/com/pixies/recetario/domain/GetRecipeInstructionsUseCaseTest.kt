@@ -4,7 +4,7 @@ import com.pixies.recetario.domain.exception.NetworkException
 import com.pixies.recetario.domain.exception.QuotaExhaustedException
 import com.pixies.recetario.domain.exception.RecipeNotFoundException
 import com.pixies.recetario.domain.model.RecipeInstructions
-import com.pixies.recetario.domain.repository.RecipeRepository
+import com.pixies.recetario.domain.repository.RecipeInstructionsSource
 import com.pixies.recetario.domain.usecase.GetRecipeInstructionsUseCase
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 
 class GetRecipeInstructionsUseCaseTest {
 
-    private val repository: RecipeRepository = mockk()
+    private val repository: RecipeInstructionsSource = mockk()
     private val useCase = GetRecipeInstructionsUseCase(repository)
 
     @Test

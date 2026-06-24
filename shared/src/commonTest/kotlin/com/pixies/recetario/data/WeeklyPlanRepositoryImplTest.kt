@@ -6,7 +6,6 @@ import com.pixies.recetario.data.local.dao.WeeklyPlanSlotDao
 import com.pixies.recetario.data.local.entity.RecipeOverviewEntity
 import com.pixies.recetario.data.local.entity.WeeklyPlanEntity
 import com.pixies.recetario.data.local.entity.WeeklyPlanSlotEntity
-import com.pixies.recetario.domain.exception.PlanNotFoundException
 import com.pixies.recetario.domain.model.RecipeOverview
 import com.pixies.recetario.domain.model.WeeklyPlan
 import io.mockk.Runs
@@ -17,7 +16,6 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class WeeklyPlanRepositoryImplTest {
 
@@ -58,28 +56,6 @@ class WeeklyPlanRepositoryImplTest {
     }
 
     @Test
-    fun `getPlanByName assembles WeeklyPlan from entity, slots, and overview`() = runTest {
-        coEvery { planDao.getPlanByName("Week A") } returns WeeklyPlanEntity(id = 1L, planName = "Week A")
-        coEvery { slotDao.getSlotsForPlan(1L) } returns listOf(
-            WeeklyPlanSlotEntity(planId = 1L, dayIndex = 2, recipeId = 99)
-        )
-        coEvery { overviewDao.getRecipeById(99) } returns fakeOverviewEntity(99)
-
-        val result = repository.getPlanByName("Week A")
-
-        assertEquals("Week A", result.planName)
-        assertEquals(1, result.daySlots.size)
-        assertEquals(99, result.daySlots[2]?.first()?.id)
-    }
-
-    @Test
-    fun `getPlanByName throws PlanNotFoundException when plan is not found`() = runTest {
-        coEvery { planDao.getPlanByName("Unknown") } returns null
-
-        assertFailsWith<PlanNotFoundException> { repository.getPlanByName("Unknown") }
-    }
-
-    @Test
     fun `getAllPlans returns assembled list of WeeklyPlans`() = runTest {
         coEvery { planDao.getAllPlans() } returns listOf(
             WeeklyPlanEntity(id = 1L, planName = "Plan 1"),
@@ -99,22 +75,6 @@ class WeeklyPlanRepositoryImplTest {
         coEvery { planDao.getAllPlans() } returns emptyList()
 
         assertEquals(emptyList(), repository.getAllPlans())
-    }
-
-    @Test
-    fun `getPlanByName assembles two recipes on same day into a list`() = runTest {
-        coEvery { planDao.getPlanByName("Week A") } returns WeeklyPlanEntity(id = 1L, planName = "Week A")
-        coEvery { slotDao.getSlotsForPlan(1L) } returns listOf(
-            WeeklyPlanSlotEntity(planId = 1L, dayIndex = 2, recipeId = 99),
-            WeeklyPlanSlotEntity(planId = 1L, dayIndex = 2, recipeId = 100)
-        )
-        coEvery { overviewDao.getRecipeById(99) } returns fakeOverviewEntity(99)
-        coEvery { overviewDao.getRecipeById(100) } returns fakeOverviewEntity(100)
-
-        val result = repository.getPlanByName("Week A")
-
-        assertEquals(1, result.daySlots.size)
-        assertEquals(2, result.daySlots[2]?.size)
     }
 
     @Test

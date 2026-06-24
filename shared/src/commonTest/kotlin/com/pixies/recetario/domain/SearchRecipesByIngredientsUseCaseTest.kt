@@ -3,7 +3,7 @@ package com.pixies.recetario.domain
 import com.pixies.recetario.domain.exception.NetworkException
 import com.pixies.recetario.domain.exception.QuotaExhaustedException
 import com.pixies.recetario.domain.model.IngredientSearchResult
-import com.pixies.recetario.domain.repository.RecipeRepository
+import com.pixies.recetario.domain.repository.IngredientSearchSource
 import com.pixies.recetario.domain.usecase.SearchRecipesByIngredientsUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 
 class SearchRecipesByIngredientsUseCaseTest {
 
-    private val repo: RecipeRepository = mockk()
+    private val repo: IngredientSearchSource = mockk()
     private val useCase = SearchRecipesByIngredientsUseCase(repo)
 
     @Test

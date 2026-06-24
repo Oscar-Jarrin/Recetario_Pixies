@@ -6,8 +6,6 @@ import com.pixies.recetario.data.local.getDatabaseBuilder
 import com.pixies.recetario.data.remote.KtorSpoonacularApiService
 import com.pixies.recetario.data.remote.buildSpoonacularClient
 import com.pixies.recetario.data.remote.httpEngine
-import com.pixies.recetario.domain.repository.RecipeRepository
-import com.pixies.recetario.domain.repository.WeeklyPlanRepository
 import com.pixies.recetario.domain.usecase.DeleteWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.GetAllWeeklyPlansUseCase
 import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
@@ -30,14 +28,14 @@ class DependencyInjector(val apiKey: String, val context: Any? = null) {
     private val weeklyPlanDao = database.weeklyPlanDao()
     private val weeklyPlanSlotDao = database.weeklyPlanSlotDao()
 
-    private val recipeRepository: RecipeRepository = RecipeRepositoryImpl(
+    private val recipeRepository = RecipeRepositoryImpl(
         api = apiService,
         overviewDao = overviewDao,
         ingredientDao = ingredientDao,
         stepDao = stepDao
     )
 
-    private val weeklyPlanRepository: WeeklyPlanRepository = WeeklyPlanRepositoryImpl(
+    private val weeklyPlanRepository = WeeklyPlanRepositoryImpl(
         planDao = weeklyPlanDao,
         slotDao = weeklyPlanSlotDao,
         overviewDao = overviewDao
