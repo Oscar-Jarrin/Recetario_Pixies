@@ -34,7 +34,7 @@ import com.pixies.recetario.presentation.RETRY_LABEL
 import com.pixies.recetario.presentation.search.SearchView
 import com.pixies.recetario.presentation.search.SearchViewModel
 
-private val DAY_LABELS = listOf("Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
+private val DAY_LABELS = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 private const val ROW_PADDING_DP = 8
 private const val SECTION_PADDING_DP = 16
 
