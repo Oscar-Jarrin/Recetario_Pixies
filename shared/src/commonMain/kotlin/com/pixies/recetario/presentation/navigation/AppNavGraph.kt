@@ -14,7 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.pixies.recetario.di.AppModule
+import com.pixies.recetario.di.DependencyInjector
 import com.pixies.recetario.presentation.detail.RecipeDetailView
 import com.pixies.recetario.presentation.detail.RecipeDetailViewModel
 import com.pixies.recetario.presentation.home.HomeView
@@ -26,7 +26,7 @@ import com.pixies.recetario.presentation.search.SearchView
 import com.pixies.recetario.presentation.search.SearchViewModel
 
 @Composable
-fun AppNavGraph(module: AppModule, navController: NavHostController = rememberNavController()) {
+fun AppNavGraph(module: DependencyInjector, navController: NavHostController = rememberNavController()) {
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
 

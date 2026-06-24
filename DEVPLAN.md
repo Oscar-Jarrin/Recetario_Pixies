@@ -339,20 +339,20 @@ Run `./gradlew :shared:commonTest` to verify before checking off any step.
 ### 0.6 Pure Kotlin DI Factory Skeleton âœ… (database property deferred to Phase 1)
 
 **Files created:**
-- `shared/src/commonMain/kotlin/com/pixies/recetario/di/AppModule.kt`
-- `desktopApp/src/jvmMain/kotlin/com/pixies/recetario/main.kt` (edit â€” wire `AppModule`)
-- `androidApp/src/androidMain/kotlin/com/pixies/recetario/MainActivity.kt` (edit â€” wire `AppModule`)
+- `shared/src/commonMain/kotlin/com/pixies/recetario/di/DependencyInjector.kt`
+- `desktopApp/src/jvmMain/kotlin/com/pixies/recetario/main.kt` (edit â€” wire `DependencyInjector`)
+- `androidApp/src/androidMain/kotlin/com/pixies/recetario/MainActivity.kt` (edit â€” wire `DependencyInjector`)
 
-- [ ] Create `AppModule` as a plain Kotlin class (not object) that takes `apiKey: String` and platform context:
+- [ ] Create `DependencyInjector` as a plain Kotlin class (not object) that takes `apiKey: String` and platform context:
   ```kotlin
-  class AppModule(apiKey: String, context: Any?) {
+  class DependencyInjector(apiKey: String, context: Any?) {
       private val httpClient    = buildSpoonacularClient(httpEngine(), apiKey)
       private val database      = getDatabaseBuilder(context).build()
       // DAOs and repositories added per phase
   }
   ```
-- [ ] Desktop `main.kt` instantiates `AppModule` and passes it to `App(module)`.
-- [ ] Android `MainActivity` instantiates `AppModule` and passes it to `App(module)`.
+- [ ] Desktop `main.kt` instantiates `DependencyInjector` and passes it to `App(module)`.
+- [ ] Android `MainActivity` instantiates `DependencyInjector` and passes it to `App(module)`.
 
 ---
 
@@ -531,7 +531,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   }
   ```
 
-- [x] Wire `RecipeRepositoryImpl` into `AppModule`.
+- [x] Wire `RecipeRepositoryImpl` into `DependencyInjector`.
 - [ ] Run: `./gradlew :shared:commonTest --tests "*RecipeRepositoryImplTest"` â€” all tests must pass. âœ“
 
 ---
@@ -946,7 +946,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   and `DatabaseBuilder.jvm.kt` (dev-only — wipes cache on version upgrade, avoids writing SQL
   migrations while the schema is still evolving).
 
-- [ ] Extract DAOs as named properties in `AppModule` and inject `stepDao` into
+- [ ] Extract DAOs as named properties in `DependencyInjector` and inject `stepDao` into
   `RecipeRepositoryImpl`. Also expose `getRecipeInstructionsUseCase`:
   ```kotlin
   private val overviewDao    = database.recipeOverviewDao()
@@ -1208,7 +1208,7 @@ Clicking a recipe navigates to the detail screen. Includes Loading skeleton + Er
   }
   ```
 
-- [ ] Wire `WeeklyPlanRepositoryImpl` into `AppModule`. Note that `overviewDao` is already a named
+- [ ] Wire `WeeklyPlanRepositoryImpl` into `DependencyInjector`. Note that `overviewDao` is already a named
   property from Phase 3 — pass the **same instance** to both repositories (no duplicate DAO):
   ```kotlin
   private val weeklyPlanDao     = database.weeklyPlanDao()

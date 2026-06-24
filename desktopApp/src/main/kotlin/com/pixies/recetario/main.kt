@@ -4,9 +4,9 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.application
-import com.pixies.recetario.di.AppModule
+import com.pixies.recetario.di.DependencyInjector
 
-private val module = AppModule(apiKey = System.getProperty("SPOONACULAR_API_KEY") ?: "")
+private val module = DependencyInjector(apiKey = System.getProperty("SPOONACULAR_API_KEY") ?: "")
 
 fun main() = application {
     Window(
