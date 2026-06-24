@@ -12,7 +12,6 @@ import com.pixies.recetario.domain.usecase.DeleteWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.GetAllWeeklyPlansUseCase
 import com.pixies.recetario.domain.usecase.GetRandomRecipesUseCase
 import com.pixies.recetario.domain.usecase.GetRecipeInstructionsUseCase
-import com.pixies.recetario.domain.usecase.GetWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.SaveWeeklyPlanUseCase
 import com.pixies.recetario.domain.usecase.SearchRecipesByIngredientsUseCase
 import io.ktor.client.HttpClient
@@ -48,7 +47,6 @@ class AppModule(val apiKey: String, val context: Any? = null) {
     val searchRecipesByIngredientsUseCase = SearchRecipesByIngredientsUseCase(recipeRepository)
     val getRecipeInstructionsUseCase = GetRecipeInstructionsUseCase(recipeRepository)
     val getAllWeeklyPlansUseCase = GetAllWeeklyPlansUseCase(weeklyPlanRepository)
-    val getWeeklyPlanUseCase = GetWeeklyPlanUseCase(weeklyPlanRepository)
     val saveWeeklyPlanUseCase = SaveWeeklyPlanUseCase(weeklyPlanRepository)
     val deleteWeeklyPlanUseCase = DeleteWeeklyPlanUseCase(weeklyPlanRepository)
 }
