@@ -29,3 +29,6 @@ reference-project/
 
 # Claude Code local settings (personal permissions, machine-specific)
 .claude/settings.local.json
+
+ADR.md
+ANALYSIS.md
